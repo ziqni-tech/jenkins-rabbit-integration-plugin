@@ -24,7 +24,7 @@ import java.util.logging.Logger;
  */
 public class RoboRabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.ParameterizedJob<?,?>> extends Trigger<T> {
 
-    public static final String PLUGIN_APPID = "remote-build";
+    public static final String PLUGIN_APPID = "robo-rabbit-remote-build";
 
     private static final String PLUGIN_NAME = Messages.RabbitMQBuildTrigger();
 

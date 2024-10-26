@@ -1,15 +1,15 @@
 <div>
-  <p>You can set the URI for RabbitMQ service you want to connect.
-  The URI should be followed to <a href="http://www.rabbitmq.com/uri-spec.html"><i>AMQP URI specificaion</i></a>. (But you cannot specify amqp_userinfo part)</p>
-  
-  <p>If you don't provide username/password, the below will be used as default.</p>
-  
+  <p>You can set the URI for the RabbitMQ service you want to connect to.
+    The URI should follow the <a href="http://www.rabbitmq.com/uri-spec.html"><i>AMQP URI specification</i></a>. (Note: you cannot specify the `amqp_userinfo` part.)</p>
+
+  <p>If you do not provide a username/password, the following default values will be used:</p>
+
   <ul>
-    <li>username: <i>guest</i></li>
-    <li>password: <i>guest</i></li>
+    <li>Username: <i>guest</i></li>
+    <li>Password: <i>guest</i></li>
   </ul>
-  
-  <p>Note that any existing connection will be disconnected if URI or username or password are changed during connecting or provides empty.</p>
-  
-  <p>You can test connection using the blow test button. It does not affect to existing connection.</p>
+
+  <p>Note that any existing connection will be disconnected if the URI, username, or password is changed while connecting, or if left empty.</p>
+
+  <p>You can test the connection using the test button below. This will not affect any existing connection.</p>
 </div>
