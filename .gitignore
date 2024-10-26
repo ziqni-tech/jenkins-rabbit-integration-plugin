@@ -1,0 +1,10 @@
+target/
+work/
+.checkstyle
+.classpath
+.project
+.settings/
+.mvn
+.github
+*.idea/
+
