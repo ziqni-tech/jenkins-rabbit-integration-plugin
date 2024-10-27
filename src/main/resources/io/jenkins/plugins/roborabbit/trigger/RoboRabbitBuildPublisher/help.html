@@ -1,0 +1,15 @@
+<h1>Robo Rabbit AMQP Build Publisher</h1>
+<p>
+    This feature publishes build results to an AMQP exchange, allowing you to send build status updates and logs to external systems via RabbitMQ.
+</p>
+<p>
+    <strong>Configuration:</strong>
+<ul>
+    <li><b>Exchange Name:</b> The name of the exchange to which the build result will be published.</li>
+    <li><b>Routing Key:</b> Specify a routing key that determines which queue the message should be delivered to.</li>
+    <li><b>Include Console Output:</b> Enable this option to publish build logs along with the status.</li>
+</ul>
+</p>
+<p>
+    The publisher provides a way to share build outcomes with other services or trigger subsequent tasks in your CI/CD pipeline.
+</p>

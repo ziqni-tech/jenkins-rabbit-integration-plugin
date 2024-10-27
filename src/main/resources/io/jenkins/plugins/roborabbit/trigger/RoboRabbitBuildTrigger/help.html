@@ -1,0 +1,15 @@
+<h1>Robo Rabbit AMQP Build Trigger</h1>
+<p>
+    This trigger listens to messages from RabbitMQ queues and starts a build when a relevant message is received.
+</p>
+<p>
+    <strong>Configuration:</strong>
+<ul>
+    <li><b>Connection URI:</b> The URI to connect to the RabbitMQ instance. This should point to a RabbitMQ server.</li>
+    <li><b>Queue Name:</b> The name of the queue to listen for messages that will trigger the build.</li>
+    <li><b>Routing Key:</b> (Optional) Specify the routing key for finer control over message filtering.</li>
+</ul>
+</p>
+<p>
+    The trigger can be used to automate builds based on messages published to a specific queue.
+</p>
