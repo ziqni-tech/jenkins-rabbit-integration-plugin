@@ -1,5 +1,6 @@
 package io.jenkins.plugins.roborabbit.trigger;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.*;
 import hudson.model.listeners.ItemListener;
@@ -15,7 +16,6 @@ import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * The extension trigger builds by application message.
@@ -30,8 +30,6 @@ public class RoboRabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.
 
     private static final String KEY_PARAM_NAME = "name";
     private static final String KEY_PARAM_VALUE = "value";
-
-    private static final Logger LOGGER = Logger.getLogger(RoboRabbitBuildTrigger.class.getName());
 
     private String remoteBuildToken;
 
@@ -73,9 +71,9 @@ public class RoboRabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.
      * @param triggers
      *          the set of current trigger instances which have already been loaded in the memory
      */
-    public void removeDuplicatedTrigger(Set<RoboRabbitBuildTrigger> triggers){
-        Map<String, RoboRabbitBuildTrigger>  tempHashMap= new HashMap<String, RoboRabbitBuildTrigger>();
-        for(RoboRabbitBuildTrigger trigger:triggers){
+    public void removeDuplicatedTrigger(Set<RoboRabbitBuildTrigger<?>> triggers){
+        Map<String, RoboRabbitBuildTrigger<?>>  tempHashMap= new HashMap<>();
+        for(RoboRabbitBuildTrigger<?> trigger:triggers){
             tempHashMap.put(trigger.getProjectName(), trigger);
         }
         triggers.clear();
@@ -141,13 +139,13 @@ public class RoboRabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.
      * @return the list of parameter values.
      */
     private List<ParameterValue> getUpdatedParameters(JSONArray jsonParameters, List<ParameterValue> definedParameters) {
-        List<ParameterValue> newParams = new ArrayList<ParameterValue>();
+        List<ParameterValue> newParams = new ArrayList<>();
         for (ParameterValue defParam : definedParameters) {
 
             for (int i = 0; i < jsonParameters.size(); i++) {
                 JSONObject jsonParam = jsonParameters.getJSONObject(i);
 
-                if (defParam.getName().toUpperCase().equals(jsonParam.getString(KEY_PARAM_NAME).toUpperCase())) {
+                if (defParam.getName().equalsIgnoreCase(jsonParam.getString(KEY_PARAM_NAME))) {
                     newParams.add(new StringParameterValue(defParam.getName(), jsonParam.getString(KEY_PARAM_VALUE)));
                 }
             }
@@ -163,7 +161,7 @@ public class RoboRabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.
      * @return the list of parameter values.
      */
     private List<ParameterValue> getDefinitionParameters(Job<?, ?> project) {
-        List<ParameterValue> parameters = new ArrayList<ParameterValue>();
+        List<ParameterValue> parameters = new ArrayList<>();
         ParametersDefinitionProperty properties = project
                 .getProperty(ParametersDefinitionProperty.class);
 
@@ -198,6 +196,7 @@ public class RoboRabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.
         }
 
         @Override
+        @NonNull
         public String getDisplayName() {
             return PLUGIN_NAME;
         }
@@ -213,13 +212,11 @@ public class RoboRabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.
             @Override
             public void onLoaded() {
                 RoboRabbitBuildListener listener = MessageQueueListener.all().get(RoboRabbitBuildListener.class);
-                Jenkins jenkins = Jenkins.getInstance();
-                if (jenkins != null) {
-                    for (Project<?, ?> p : jenkins.getAllItems(Project.class)) {
-                        RoboRabbitBuildTrigger t = p.getTrigger(RoboRabbitBuildTrigger.class);
-                        if (t != null) {
-                            listener.addTrigger(t);
-                        }
+                Jenkins jenkins = Jenkins.get();
+                for (Project<?, ?> p : jenkins.getAllItems(Project.class)) {
+                    RoboRabbitBuildTrigger<?> t = p.getTrigger(RoboRabbitBuildTrigger.class);
+                    if (t != null && listener != null) {
+                        listener.addTrigger(t);
                     }
                 }
             }

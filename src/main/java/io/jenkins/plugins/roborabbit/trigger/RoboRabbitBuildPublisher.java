@@ -1,30 +1,33 @@
 package io.jenkins.plugins.roborabbit.trigger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
-import hudson.Extension;
+
 import hudson.Launcher;
+import hudson.Extension;
+import hudson.model.Result;
+import hudson.tasks.Notifier;
+import hudson.tasks.Publisher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
-import hudson.model.Result;
-import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
-import hudson.tasks.Notifier;
-import hudson.tasks.Publisher;
+import hudson.tasks.BuildStepDescriptor;
+
+import io.jenkins.plugins.roborabbit.consumer.publishers.PublishResult;
 import io.jenkins.plugins.roborabbit.consumer.publishers.PublishChannel;
 import io.jenkins.plugins.roborabbit.consumer.publishers.PublishChannelFactory;
-import io.jenkins.plugins.roborabbit.consumer.publishers.PublishResult;
+
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.HashMap;
+import java.io.IOException;
 import java.util.logging.Logger;
+import java.util.concurrent.Future;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The extension publish build result using rabbitmq.

@@ -1,17 +1,17 @@
 package io.jenkins.plugins.roborabbit.trigger;
 
 import hudson.Extension;
-import io.jenkins.plugins.roborabbit.consumer.extensions.MessageQueueListener;
-import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONException;
 import net.sf.json.JSONSerializer;
+import io.jenkins.plugins.roborabbit.consumer.extensions.MessageQueueListener;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * The extension listen application message then call triggers.
@@ -29,7 +29,7 @@ public class RoboRabbitBuildListener extends MessageQueueListener {
 
     private static final Logger LOGGER = Logger.getLogger(RoboRabbitBuildListener.class.getName());
 
-    private final Set<RoboRabbitBuildTrigger> triggers = new CopyOnWriteArraySet<RoboRabbitBuildTrigger>();
+    private final Set<RoboRabbitBuildTrigger<?>> triggers = new CopyOnWriteArraySet<>();
 
     @Override
     public String getName() {
@@ -46,7 +46,7 @@ public class RoboRabbitBuildListener extends MessageQueueListener {
      *
      * @return the set of {@link RoboRabbitBuildTrigger}.
      */
-    public  Set<RoboRabbitBuildTrigger> getTriggers(){
+    public  Set<RoboRabbitBuildTrigger<?>> getTriggers(){
         return this.triggers;
     }
 
@@ -56,7 +56,7 @@ public class RoboRabbitBuildListener extends MessageQueueListener {
      * @param trigger
      *            the trigger.
      */
-    public void addTrigger(RoboRabbitBuildTrigger trigger) {
+    public void addTrigger(RoboRabbitBuildTrigger<?> trigger) {
         triggers.add(trigger);
     }
 
@@ -66,7 +66,7 @@ public class RoboRabbitBuildListener extends MessageQueueListener {
      * @param trigger
      *            the trigger.
      */
-    public void removeTrigger(RoboRabbitBuildTrigger trigger) {
+    public void removeTrigger(RoboRabbitBuildTrigger<?> trigger) {
         triggers.remove(trigger);
     }
 
@@ -87,32 +87,29 @@ public class RoboRabbitBuildListener extends MessageQueueListener {
     @Override
     public void onReceive(String queueName, String contentType, Map<String, Object> headers, byte[] body) {
         if (CONTENT_TYPE_JSON.equals(contentType)) {
+            String msg = new String(body, StandardCharsets.UTF_8);
+
             try {
-                String msg = new String(body, "UTF-8");
-                try {
-                    JSONObject json = (JSONObject) JSONSerializer.toJSON(msg);
-                    for (RoboRabbitBuildTrigger t : triggers) {
+                JSONObject json = (JSONObject) JSONSerializer.toJSON(msg);
+                for (RoboRabbitBuildTrigger<?> t : triggers) {
 
-                        if (t.getRemoteBuildToken() == null) {
-                            LOGGER.log(Level.WARNING, "ignoring AMQP trigger for project {0}: no token set", t.getProjectName());
-                            continue;
-                        }
+                    if (t.getRemoteBuildToken() == null) {
+                        LOGGER.log(Level.WARNING, "ignoring AMQP trigger for project {0}: no token set", t.getProjectName());
+                        continue;
+                    }
 
-                        if (t.getProjectName().equals(json.getString(KEY_PROJECT))
-                                && t.getRemoteBuildToken().equals(json.getString(KEY_TOKEN))) {
-                            if (json.containsKey(KEY_PARAMETER)) {
-                                t.scheduleBuild(queueName, json.getJSONArray(KEY_PARAMETER));
-                            } else {
-                                t.scheduleBuild(queueName, null);
-                            }
+                    if (t.getProjectName().equals(json.getString(KEY_PROJECT))
+                            && t.getRemoteBuildToken().equals(json.getString(KEY_TOKEN))) {
+                        if (json.containsKey(KEY_PARAMETER)) {
+                            t.scheduleBuild(queueName, json.getJSONArray(KEY_PARAMETER));
+                        } else {
+                            t.scheduleBuild(queueName, null);
                         }
                     }
-                } catch (JSONException e) {
-                    LOGGER.warning("JSON format string: " + msg);
-                    LOGGER.warning(e.getMessage());
                 }
-            } catch (UnsupportedEncodingException e) {
-                LOGGER.warning("Unsupported encoding. Is message body is not string?");
+            } catch (JSONException e) {
+                LOGGER.warning("JSON format string: " + msg);
+                LOGGER.warning(e.getMessage());
             }
         }
     }
