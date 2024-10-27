@@ -2,26 +2,31 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:t="/lib/hudson">
 
     <!-- Checkbox to enable/disable this functionality -->
-    <f:entry title="Enable the Robo Rabbit console collector" field="enabled">
+    <f:entry title="Enable the Robo Rabbit console collector" field="enableCollector">
         <f:checkbox/>
     </f:entry>
 
-    <!-- Input fields for Broker Name and Routing Key, wrapped with an extra class for easier access -->
-    <f:block>
-        <f:entry title="Broker Name" field="brokerName" help="/plugin/your-plugin-id/help-broker-name.html" class="conditional-field">
-            <f:textbox/>
-        </f:entry>
+    <div class="optionalBlock-container jenkins-form-item">
+        <div class="form-container">
+            <f:block>
+                <!-- Input field for Broker Name -->
+                <f:entry title="Broker Name" field="brokerName" class="conditional-field">
+                    <f:textbox/>
+                </f:entry>
 
-        <f:entry title="Routing Key" field="routingKey" help="/plugin/your-plugin-id/help-routing-key.html" class="conditional-field">
-            <f:textbox/>
-        </f:entry>
-    </f:block>
+                <!-- Input field for Routing Key -->
+                <f:entry title="Routing Key" field="routingKey" class="conditional-field">
+                    <f:textbox/>
+                </f:entry>
+            </f:block>
+        </div>
+    </div>
 
-    <!-- JavaScript to handle visibility of brokerName and routingKey based on enabled checkbox -->
+    <!-- JavaScript to handle visibility of brokerName and routingKey based on enableCollector checkbox -->
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", function () {
             // Get references to the elements
-            var enableCheckbox = document.querySelector("[name='_.enabled']");
+            var enableCheckbox = document.querySelector("[name='_.enableCollector']");
             var conditionalFields = document.querySelectorAll(".conditional-field");
 
             if (enableCheckbox) {

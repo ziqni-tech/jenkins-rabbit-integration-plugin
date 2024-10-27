@@ -7,11 +7,12 @@ import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Extension
-public class ConsoleOutputRunListener extends RunListener<Run<?,?>> {
+public class ConsoleOutputRunListener extends RunListener<Run> {
 
     private static final Logger LOGGER = Logger.getLogger(ConsoleOutputRunListener.class.getName());
     private ConsoleCollectorJobProperty property;
@@ -20,7 +21,7 @@ public class ConsoleOutputRunListener extends RunListener<Run<?,?>> {
     public void onStarted(Run run, TaskListener listener) {
         this.property = getJobProperty(run);
 
-        if (property != null && property.isEnabled()) {
+        if (property != null && property.getEnableCollector()) {
             listener.getLogger().println("[ConsoleOutputRunListener] Build started: " + run.getFullDisplayName());
             listener.getLogger().println("Broker Name: " + property.getBrokerName());
             listener.getLogger().println("Routing Key: " + property.getRoutingKey());
@@ -45,8 +46,8 @@ public class ConsoleOutputRunListener extends RunListener<Run<?,?>> {
         LOGGER.log(Level.INFO, "[ConsoleOutputRunListener] Build finalized: {0}", run.getFullDisplayName());
     }
 
-    private ConsoleCollectorJobProperty getJobProperty(Run<?, ?> run) {
-        if (run.getParent() instanceof Job) {
+    private ConsoleCollectorJobProperty getJobProperty(Run run) {
+        if (Objects.nonNull(run)) {
             Job<?, ?> job = (Job<?, ?>) run.getParent();
             return job.getProperty(ConsoleCollectorJobProperty.class);
         }

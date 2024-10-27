@@ -130,16 +130,24 @@ public final class RMQManager implements RMQConnectionListener {
     public synchronized void shutdownWithWait() throws InterruptedException {
         if (rmqConnection != null && rmqConnection.isOpen()) {
             try {
-                closeLatch = new CountDownLatch(1);
+                setCloseLatch(new CountDownLatch(1));
                 shutdown();
-                if (!closeLatch.await(TIMEOUT_CLOSE, TimeUnit.MILLISECONDS)) {
+                if (!getCloseLatch().await(TIMEOUT_CLOSE, TimeUnit.MILLISECONDS)) {
                     onCloseCompleted(rmqConnection);
                     throw new InterruptedException("Wait timeout");
                 }
             } finally {
-                closeLatch = null;
+                setCloseLatch(null);
             }
         }
+    }
+
+    private synchronized void setCloseLatch(CountDownLatch latch) {
+        this.closeLatch = latch;
+    }
+
+    private synchronized CountDownLatch getCloseLatch() {
+        return this.closeLatch;
     }
 
     /**
@@ -224,14 +232,16 @@ public final class RMQManager implements RMQConnectionListener {
      *            the connection.
      */
     public void onCloseCompleted(RMQConnection rmqConnection) {
-        if (this.rmqConnection != null && this.rmqConnection.equals(rmqConnection)) {
-            this.rmqConnection = null;
-            LOGGER.info("Closed RabbitMQ connection: {}",rmqConnection.getServiceUri());
-            rmqConnection.removeRMQConnectionListener(this);
-            ServerOperator.fireOnCloseCompleted(rmqConnection);
-            statusOpen = false;
-            if (closeLatch != null) {
-                closeLatch.countDown();
+        synchronized (this) {
+            if (this.rmqConnection != null && this.rmqConnection.equals(rmqConnection)) {
+                this.rmqConnection = null;
+                LOGGER.info("Closed RabbitMQ connection: {}", rmqConnection.getServiceUri());
+                rmqConnection.removeRMQConnectionListener(this);
+                ServerOperator.fireOnCloseCompleted(rmqConnection);
+                statusOpen = false;
+                if (closeLatch != null) {
+                    closeLatch.countDown();
+                }
             }
         }
     }

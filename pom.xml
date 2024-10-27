@@ -10,12 +10,15 @@
   </parent>
 
   <groupId>io.jenkins.plugins</groupId>
-  <artifactId>robo-rabbit-consumer</artifactId>
+  <artifactId>jenkins-robo-rabbit-plugin</artifactId>
   <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
-  <name>RabbitMQ Consumer Plugin</name>
-  <description>A plugin that consume messages from RabbitMQ then deliver listeners.</description>
+  <name>Robo Rabbit AMQP Jenkins Integration Plugin</name>
+  <description>This plugin facilitates communication between RabbitMQ and registered listeners.
+    It consumes messages from RabbitMQ and delivers them to the appropriate listeners, enabling real-time processing and response.
+    Additionally, the plugin features a trigger mechanism that can initiate build processes and publish the resulting build status and outputs back to AMQP.
+    The plugin also provides configurable options to selectively publish specific outputs from the build console to AMQP, offering granular control over which messages are shared.</description>
   <url>http://wiki.jenkins-ci.org/display/JENKINS/RabbitMQ+Consumer+Plugin</url>
 
   <licenses>
@@ -23,17 +26,17 @@
       <name>MIT</name>
       <url>http://www.opensource.org/licenses/mit-license.php</url>
       <comments>
-        Copyright 2013-2018 rinrinne a.k.a. rin_ne. All rights reserved.
+        Copyright 2024 ZIQNI Ltd aka ziqni-tech All rights reserved.
       </comments>
     </license>
   </licenses>
 
   <developers>
     <developer>
-      <id>rin_ne</id>
-      <name>rinrinne</name>
-      <email>rinrin.ne@gmail.com</email>
-      <timezone>+9</timezone>
+      <id>ziqni</id>
+      <name>ziqni</name>
+      <email>support@gmail.com</email>
+      <timezone>+0</timezone>
     </developer>
   </developers>
 

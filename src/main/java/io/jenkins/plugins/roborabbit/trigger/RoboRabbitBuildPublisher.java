@@ -206,7 +206,7 @@ public class RoboRabbitBuildPublisher extends Notifier {
          */
         @Override
         public String getDisplayName() {
-            return Messages.RabbitMQBuildPublisher();
+            return Messages.roboRabbitBuildPublisher();
         }
     }
 }
