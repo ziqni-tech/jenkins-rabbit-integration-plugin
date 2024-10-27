@@ -10,12 +10,22 @@
         <div class="form-container">
             <f:block>
                 <!-- Input field for Broker Name -->
-                <f:entry title="Broker Name" field="brokerName" class="conditional-field">
+                <f:entry title="Broker name" field="brokerName" class="conditional-field">
                     <f:textbox/>
                 </f:entry>
 
                 <!-- Input field for Routing Key -->
-                <f:entry title="Routing Key" field="routingKey" class="conditional-field">
+                <f:entry title="Routing key" field="routingKey" class="conditional-field">
+                    <f:textbox/>
+                </f:entry>
+
+                <!-- Input field for Start Publishing Trigger -->
+                <f:entry title="Start publishing if the console message contains (Optional)" field="startPublishingIfMessageContains" class="conditional-field">
+                    <f:textbox/>
+                </f:entry>
+
+                <!-- Input field for Stop Publishing Trigger -->
+                <f:entry title="Stop publishing if the console message contains (Optional)" field="stopPublishingIfMessageContains" class="conditional-field">
                     <f:textbox/>
                 </f:entry>
             </f:block>

@@ -1,0 +1,21 @@
+<h1>Stop Publishing if Message Contains</h1>
+<p>
+    This function inspects text being printed to the console and stops publishing if a specified case-sensitive string is found.
+</p>
+<p>
+    <strong>Purpose:</strong>
+    The function allows conditional termination of console output publishing to an AMQP exchange. When the specified string is detected in the console output, it stops publishing all subsequent messages, including the message that triggered the stop.
+</p>
+<p>
+    <strong>Configuration:</strong>
+<ul>
+    <li><b>Case-Sensitive String:</b> Provide the exact string that will trigger the stop. The function will look for this string in a case-sensitive manner.</li>
+</ul>
+</p>
+<p>
+    <strong>Example Usage:</strong>
+    If the string "<code>END_LOG</code>" is specified, the function will stop publishing all console messages once a line containing "END_LOG" appears.
+</p>
+<p>
+    This feature is useful for stopping conditional publishing based on specific log outputs, such as markers indicating the end of a relevant section or when unnecessary information starts being logged.
+</p>

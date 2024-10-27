@@ -15,6 +15,8 @@ public class ConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
     private Boolean enableCollector;
     private String brokerName;
     private String routingKey;
+    private String startPublishingIfMessageContains;
+    private String stopPublishingIfMessageContains;
 
     /**
      * Creates instance with specified parameters.
@@ -24,13 +26,26 @@ public class ConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
      * @param routingKey the routing key.
      */
     @DataBoundConstructor
-    public ConsoleCollectorJobProperty(Boolean enableCollector, String brokerName, String routingKey) {
+    public ConsoleCollectorJobProperty(Boolean enableCollector, String brokerName, String routingKey, String startPublishingIfMessageContains, String stopPublishingIfMessageContains) {
         this.enableCollector = enableCollector;
         this.brokerName = brokerName;
+
         if (StringUtils.isBlank(routingKey)) {
             this.routingKey = RoboRabbitBuildPublisher.class.getPackage().getName();
         } else {
             this.routingKey = routingKey;
+        }
+
+        if (StringUtils.isBlank(startPublishingIfMessageContains)) {
+            this.startPublishingIfMessageContains = null;
+        } else {
+            this.startPublishingIfMessageContains = startPublishingIfMessageContains;
+        }
+
+        if (StringUtils.isBlank(stopPublishingIfMessageContains)) {
+            this.stopPublishingIfMessageContains = null;
+        } else {
+            this.stopPublishingIfMessageContains = stopPublishingIfMessageContains;
         }
     }
 
@@ -59,6 +74,26 @@ public class ConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
     @DataBoundSetter
     public void setRoutingKey(String routingKey) {
         this.routingKey = routingKey;
+    }
+
+    public String getStartPublishingIfMessageContains() {
+        return startPublishingIfMessageContains;
+    }
+
+    @DataBoundSetter
+    public ConsoleCollectorJobProperty setStartPublishingIfMessageContains(String startPublishingIfMessageContains) {
+        this.startPublishingIfMessageContains = startPublishingIfMessageContains;
+        return this;
+    }
+
+    public String getStopPublishingIfMessageContains() {
+        return stopPublishingIfMessageContains;
+    }
+
+    @DataBoundSetter
+    public ConsoleCollectorJobProperty setStopPublishingIfMessageContains(String stopPublishingIfMessageContains) {
+        this.stopPublishingIfMessageContains = stopPublishingIfMessageContains;
+        return this;
     }
 
     @Extension
