@@ -2,15 +2,15 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:t="/lib/hudson">
 
     <!-- Checkbox to enable/disable this functionality -->
-    <f:entry title="Enable the Robo Rabbit console collector" field="enableCollector">
+    <f:entry title="Robo Rabbit console publisher" field="enableCollector">
         <f:checkbox/>
     </f:entry>
 
     <div class="optionalBlock-container jenkins-form-item">
         <div class="form-container">
             <f:block>
-                <!-- Input field for Broker Name -->
-                <f:entry title="Broker name" field="brokerName" class="conditional-field">
+                <!-- Input field for Exchange Name -->
+                <f:entry title="Exchange name" field="exchangeName" class="conditional-field">
                     <f:textbox/>
                 </f:entry>
 
@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <!-- JavaScript to handle visibility of brokerName and routingKey based on enableCollector checkbox -->
+    <!-- JavaScript to handle visibility of exchangeName and routingKey etc based on enableCollector checkbox -->
     <script type="text/javascript">
         document.addEventListener("DOMContentLoaded", function () {
             // Get references to the elements

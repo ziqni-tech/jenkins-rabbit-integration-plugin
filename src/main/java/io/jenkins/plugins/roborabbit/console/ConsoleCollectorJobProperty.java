@@ -13,7 +13,7 @@ import io.jenkins.plugins.roborabbit.trigger.RoboRabbitBuildPublisher;
 public class ConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
 
     private Boolean enableCollector;
-    private String brokerName;
+    private String exchangeName;
     private String routingKey;
     private String startPublishingIfMessageContains;
     private String stopPublishingIfMessageContains;
@@ -22,13 +22,13 @@ public class ConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
      * Creates instance with specified parameters.
      *
      * @param enableCollector is enabled.
-     * @param brokerName the broker name.
+     * @param exchangeName the broker name.
      * @param routingKey the routing key.
      */
     @DataBoundConstructor
-    public ConsoleCollectorJobProperty(Boolean enableCollector, String brokerName, String routingKey, String startPublishingIfMessageContains, String stopPublishingIfMessageContains) {
+    public ConsoleCollectorJobProperty(Boolean enableCollector, String exchangeName, String routingKey, String startPublishingIfMessageContains, String stopPublishingIfMessageContains) {
         this.enableCollector = enableCollector;
-        this.brokerName = brokerName;
+        this.exchangeName = exchangeName;
 
         if (StringUtils.isBlank(routingKey)) {
             this.routingKey = RoboRabbitBuildPublisher.class.getPackage().getName();
@@ -58,13 +58,13 @@ public class ConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
         this.enableCollector = enableCollector;
     }
 
-    public String getBrokerName() {
-        return brokerName;
+    public String getExchangeName() {
+        return exchangeName;
     }
 
     @DataBoundSetter
-    public void setBrokerName(String brokerName) {
-        this.brokerName = brokerName;
+    public void setExchangeName(String exchangeName) {
+        this.exchangeName = exchangeName;
     }
 
     public String getRoutingKey() {

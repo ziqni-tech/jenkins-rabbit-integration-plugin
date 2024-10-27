@@ -7,7 +7,26 @@
 <ul>
     <li><b>Exchange Name:</b> The name of the exchange to which the build result will be published.</li>
     <li><b>Routing Key:</b> Specify a routing key that determines which queue the message should be delivered to.</li>
-    <li><b>Include Console Output:</b> Enable this option to publish build logs along with the status.</li>
+</ul>
+</p>
+<p>
+    <strong>Published JSON Format:</strong>
+    Below is an example of the JSON format that gets published:
+<pre><code>
+    {
+        "project": "ExampleProject",
+        "number": 123,
+        "status": "SUCCESS"
+    }
+    </code></pre>
+<strong>Status Options:</strong>
+The following are the possible values for the <code>status</code> field:
+<ul>
+    <li><code>SUCCESS</code> - The build completed successfully.</li>
+    <li><code>UNSTABLE</code> - The build completed with some issues (e.g., failing tests).</li>
+    <li><code>FAILURE</code> - The build failed.</li>
+    <li><code>NOT_BUILT</code> - The build was not run.</li>
+    <li><code>ABORTED</code> - The build was manually stopped before completion.</li>
 </ul>
 </p>
 <p>

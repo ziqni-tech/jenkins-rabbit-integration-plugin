@@ -46,18 +46,18 @@ public class RoboRabbitBuildPublisher extends Notifier {
 
     private static final String LOG_HEADER = "Publish to RabbitMQ: ";
 
-    private String brokerName;
+    private String exchangeName;
     private String routingKey;
 
     /**
      * Creates instance with specified parameters.
      *
-     * @param brokerName the broker name.
+     * @param exchangeName the exchange name.
      * @param routingKey the routing key.
      */
     @DataBoundConstructor
-    public RoboRabbitBuildPublisher(String brokerName, String routingKey) {
-        this.brokerName = brokerName;
+    public RoboRabbitBuildPublisher(String exchangeName, String routingKey) {
+        this.exchangeName = exchangeName;
         if (StringUtils.isBlank(routingKey)) {
             this.routingKey = RoboRabbitBuildPublisher.class.getPackage().getName();
         } else {
@@ -66,21 +66,21 @@ public class RoboRabbitBuildPublisher extends Notifier {
     }
 
     /**
-     * Gets broker name.
+     * Gets exchange name.
      *
-     * @return the broker name.
+     * @return the exchange name.
      */
-    public String getBrokerName() {
-        return brokerName;
+    public String getExchangeName() {
+        return exchangeName;
     }
 
     /**
-     * Sets broker name.
+     * Sets exchange name.
      *
-     * @param brokerName the broker name.
+     * @param exchangeName the exchange name.
      */
-    public void setBrokerName(String brokerName) {
-        this.brokerName = brokerName;
+    public void setExchangeName(String exchangeName) {
+        this.exchangeName = exchangeName;
     }
 
     /**
@@ -130,7 +130,7 @@ public class RoboRabbitBuildPublisher extends Notifier {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
-        if (brokerName == null || brokerName.length() == 0) {
+        if (exchangeName == null || exchangeName.length() == 0) {
             return true;
         }
 
@@ -157,7 +157,7 @@ public class RoboRabbitBuildPublisher extends Notifier {
         PublishChannel ch = PublishChannelFactory.getPublishChannel();
         if (ch != null && ch.isOpen()) {
             // return value is not needed if you don't need to wait.
-            Future<PublishResult> future = ch.publish(brokerName, routingKey, builder.build(),
+            Future<PublishResult> future = ch.publish(exchangeName, routingKey, builder.build(),
                                                       json.toString().getBytes(StandardCharsets.UTF_8));
 
             // Wait until publish is completed.

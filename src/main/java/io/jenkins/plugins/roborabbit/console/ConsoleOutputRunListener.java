@@ -23,7 +23,7 @@ public class ConsoleOutputRunListener extends RunListener<Run> {
 
         if (property != null && property.getEnableCollector()) {
             listener.getLogger().println("[ConsoleOutputRunListener] Build started: " + run.getFullDisplayName());
-            listener.getLogger().println("Broker Name: " + property.getBrokerName());
+            listener.getLogger().println("Broker Name: " + property.getExchangeName());
             listener.getLogger().println("Routing Key: " + property.getRoutingKey());
         }
     }
