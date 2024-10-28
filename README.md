@@ -1,14 +1,16 @@
 Jenkins RabbitMQ Integration
 =======================================================
 
-* Author: Ziqni
+* Author: [ZIQNI][ziqni-web]
 * Repository: https://github.com/ziqni-tech/jenkins-rabbit-integration-plugin
 * Plugin Information: https://github.com/ziqni-tech/jenkins-rabbit-integration-plugin
 
-### Attribution for derivative work
-This work is based on the "RabbitMQ Consumer and Build Trigger Plugin for Jenkins" by Ziqni and © 2013 rinrinne a.k.a. rin_ne, licensed under the MIT License.
+[ziqni-web]: https://www.ziqni.com
 
-Modifications have been made to extend the functionality, improve integration, and adapt the plugin for additional use cases.
+### Attribution for derivative work
+This work is based on the "RabbitMQ Consumer and Build Trigger Plugin for Jenkins" by © 2013 rinrinne a.k.a. rin_ne, licensed under the MIT License.
+
+Modifications have been made to extend the functionality, improve integration, and adapt the plugin for additional use cases and improved credential management.
 
 Overview
 ------------------------
@@ -31,10 +33,10 @@ It utilizes the latest libraries and the new Jenkins architecture to ensure seam
 Features
 ------------------------
 * Consumes application messages from specific queues
-* Triggers builds based on application messages
-* Publishes console output to RabbitMQ
-* Publishes build results to RabbitMQ
 * Provides interfaces for listening to application messages
+* Triggers builds based on application messages (Optional)
+* Publishes console output to RabbitMQ (Optional)
+* Publishes build results to RabbitMQ (Optional)
 
 Important notes
 ------------------------
@@ -76,12 +78,12 @@ Expected JSON Format: Below is the JSON format expected by this trigger to initi
         ]
     }
 
-**Fields Description:**
+### Fields Description:
 * project: The name of the Jenkins project to trigger
 * token: (Optional) A security token to authenticate the build trigger request
 * parameter: An array of parameter objects, each containing a name and a value for passing build parameters
 
-**Required Properties:** 
+### Required Properties: 
 
 When publishing a message to the RabbitMQ queue, the following message properties must be set:
 
@@ -100,7 +102,7 @@ When enabled, the plugin will collect and process console logs for this build, p
 
 If disabled, all associated settings (like Broker Name and Routing Key) will be ignored, and the plugin will not interact with RabbitMQ for this job.
 
-**Configuration:**
+### Configuration:
 
 * Exchange Name: The name of the exchange to which the build result will be published.
 * Routing Key: Specify a routing key that determines which queue the message should be delivered to.
@@ -114,7 +116,7 @@ Build results publishing
 ------------------------
 To publish build results, add the following to your job configuration:
 
-**Configuration:**
+### Configuration:
 
 * Exchange Name: The name of the exchange to which the build result will be published.
 * Routing Key: Specify a routing key that determines which queue the message should be delivered to.
@@ -128,7 +130,7 @@ To publish build results, add the following to your job configuration:
         "status": "SUCCESS"
     }
 
-**Status Options:** 
+### Status Options: 
 
 The following are the possible values for the status field:
 * SUCCESS - The build completed successfully.

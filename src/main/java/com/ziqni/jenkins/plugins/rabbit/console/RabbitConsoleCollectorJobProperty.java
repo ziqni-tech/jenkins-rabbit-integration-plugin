@@ -49,6 +49,10 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
         }
     }
 
+    public boolean isEnableCollector() {
+        return enableCollector;
+    }
+
     public Boolean getEnableCollector() {
         return enableCollector;
     }
