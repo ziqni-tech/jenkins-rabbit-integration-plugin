@@ -92,7 +92,7 @@ When publishing a message to the RabbitMQ queue, the following message propertie
 * routingkey: Should be set to the appropriate routing key value or com.ziqni.jenkins.plugins.rabbit.trigger.rabbitbuildtrigger
 
 This trigger can be used to automate builds based on messages published to a specific queue with the specified format and properties.
-
+![build-trigger.png](images/build-trigger.png)
 ---
 [Build] Console output publishing
 ------------------------
@@ -111,7 +111,7 @@ If disabled, all associated settings (like Broker Name and Routing Key) will be 
 * Template (Optional): This field allows you to specify a custom message template to be used when publishing console information to RabbitMQ. If left empty, the default template below will be used
 
 Published with content type application/text
-
+![build-console-line.png](images/build-console-line.png)
 ---
 [Build] Results publishing
 ------------------------
@@ -161,7 +161,7 @@ The following are the possible values for the status field:
 * ABORTED - The build was manually stopped before completion.
 
 The publisher provides a way to share build outcomes with other services or trigger subsequent tasks in your CI/CD pipeline.
-
+![build-complete-notification.png](images/build-complete-notification.png)
 ---
 For the adventurous...
 =======================================================
