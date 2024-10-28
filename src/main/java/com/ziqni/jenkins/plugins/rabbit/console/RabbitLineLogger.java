@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,6 +28,7 @@ import static com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier.HEADER_MA
 public class RabbitLineLogger extends LineTransformationOutputStream.Delegating {
 
     private static final Logger LOGGER = Logger.getLogger(RabbitLineLogger.class.getName());
+
     private final RabbitConsoleCollectorJobProperty property;
     private final AtomicInteger counter = new AtomicInteger(0);
     private final boolean hasStopPublishingIfMessageContains;
@@ -34,7 +36,7 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
     private final Map<String, String> envVars;
     private final boolean hasTemplate;
 
-    private final AtomicBoolean isPublishing = new AtomicBoolean(false);
+    private final AtomicBoolean isPublishing = new AtomicBoolean(true);
 
     public RabbitLineLogger(OutputStream logger, RabbitConsoleCollectorJobProperty property, Run<?,?> run, TaskListener listener) throws IOException, InterruptedException {
         super(logger); // Pass the underlying output stream to the superclass
@@ -44,55 +46,66 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
         this.hasTemplate = property.getTemplate() != null && !property.getTemplate().trim().isEmpty() && !property.getTemplate().contains("$");
 
         // If the property is null or empty, set the publishing flag to true
-        if(property.getStartPublishingIfMessageContains() == null && property.getStartPublishingIfMessageContains().trim().isEmpty()){
-            isPublishing.set(true);
-        }
+        isPublishing.set(property.getStartPublishingIfMessageContains() == null || property.getStartPublishingIfMessageContains().trim().isEmpty());
 
         // Check if the property has a stop publishing message
         this.hasStopPublishingIfMessageContains = property.getStartPublishingIfMessageContains() != null && !property.getStartPublishingIfMessageContains().trim().isEmpty();
     }
 
     @Override
-    protected void eol(byte[] b, int len) throws IOException {
+    protected void eol(byte[] b, int len) {
+        try {
+            // Increment the counter
+            final var lineNumber = counter.incrementAndGet();
 
-        // Increment the counter
-        final var lineNumber = counter.incrementAndGet();
+            // Convert the byte array to a string
+            String line = new String(b, 0, len, StandardCharsets.UTF_8);
 
-        // Convert the byte array to a string
-        String line = new String(b, 0, len, StandardCharsets.UTF_8);
+            // Trim any end-of-line characters (optional, based on your needs)
+            line = trimEOL(line);
 
-        // Trim any end-of-line characters (optional, based on your needs)
-        line = trimEOL(line);
-
-        if(!isPublishing.get()){
-            // Check if the line contains the specified string
-            if (line.contains(property.getStartPublishingIfMessageContains())) {
-                isPublishing.set(true);
+            if (!isPublishing.get()) {
+                // Check if the line contains the specified string
+                if (property.getStartPublishingIfMessageContains() != null && line.contains(property.getStartPublishingIfMessageContains())) {
+                    isPublishing.set(true);
+                }
+            } else if (hasStopPublishingIfMessageContains && isPublishing.get() && Objects.nonNull(property.getStopPublishingIfMessageContains())) {
+                if (line.contains(property.getStopPublishingIfMessageContains())) {
+                    isPublishing.set(false);
+                }
             }
-        }
-        else if(hasStopPublishingIfMessageContains && isPublishing.get()) {
-            if (line.contains(property.getStopPublishingIfMessageContains())) {
-                isPublishing.set(false);// Process the line
-                publish(line);
-            }
-        }
 
-        // Process the line
-        if(hasTemplate){
-            String tmp = Utils.injectEnvVars(run,envVars,property.getTemplate());
+            // Process the line if publishing is enabled
+            if (isPublishing.get()) {
+                String formattedLine = line;
+                if (hasTemplate) {
+                    String tmp = Utils.injectEnvVars(run, envVars, property.getTemplate());
 
-            if(tmp.contains("\"${BUILD_CONSOLE_LINE}\"")){
-                tmp = tmp.replace("\"${BUILD_CONSOLE_LINE}\"",line.replace("\"","\\\""));
+                    if (tmp.contains("\"${BUILD_CONSOLE_LINE}\"")) {
+                        tmp = tmp.replace("\"${BUILD_CONSOLE_LINE}\"", line.replace("\"", "\\\""));
+                    } else {
+                        tmp = tmp.replace("${BUILD_CONSOLE_LINE}", line);
+                    }
+                    formattedLine = tmp.replace("${BUILD_CONSOLE_LINE_NUMBER}", String.valueOf(lineNumber));
+                }
+                publish(formattedLine);
             }
-            else {
-                tmp = tmp.replace("${BUILD_CONSOLE_LINE}",line);
+
+            // Pass the original line to the underlying logger
+            out.write(b, 0, len);
+
+        } catch (Throwable e) {
+            LOGGER.warning(LOG_HEADER + "Failed to process line: " + e.getMessage());
+            // Make sure the exception doesn't interrupt logging
+            try {
+                out.write(b, 0, len);
+            } catch (IOException ioException) {
+                // Handle any secondary exceptions
+                LOGGER.severe(LOG_HEADER + "Error writing to the original logger: " + ioException.getMessage());
             }
-            publish(tmp.replace("${BUILD_CONSOLE_LINE_NUMBER}",String.valueOf(lineNumber)));
-        }
-        else {
-            publish(line);
         }
     }
+
 
     protected void publish(String line){
 

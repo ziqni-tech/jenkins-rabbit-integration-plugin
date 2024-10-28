@@ -1,9 +1,8 @@
 package com.ziqni.jenkins.plugins.rabbit.console;
 
-import hudson.model.Job;
-import hudson.model.Run;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.model.*;
 import hudson.console.ConsoleLogFilter;
-import hudson.model.TaskListener;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,24 +10,26 @@ import java.io.OutputStream;
 public class RabbitConsoleLogFilter extends ConsoleLogFilter {
 
     private final TaskListener listener;
+    private final RabbitConsoleCollectorJobProperty property;
 
-    public RabbitConsoleLogFilter(TaskListener listener) {
+    public RabbitConsoleLogFilter(TaskListener listener, RabbitConsoleCollectorJobProperty property) {
         this.listener = listener;
+        this.property = property;
     }
 
     @Override
     public OutputStream decorateLogger(Run run, OutputStream logger) throws IOException, InterruptedException {
-        // Retrieve the job property from the run
-        Job<?, ?> job = run.getParent();
-        RabbitConsoleCollectorJobProperty property = job.getProperty(RabbitConsoleCollectorJobProperty.class);
+        return new RabbitLineLogger(logger, property, run, listener);
+    }
 
-        if (property != null && property.isEnableCollector()) {
-            // Pass the routing key or any other settings from the property to your logger
-            return new RabbitLineLogger(logger, property, run, listener);
-        } else {
-            // If property is not enabled or not present, return the original logger
-            return logger;
-        }
+    @Override
+    public OutputStream decorateLogger(AbstractBuild build, OutputStream logger) throws IOException, InterruptedException {
+        return super.decorateLogger(build, logger);
+    }
+
+    @Override
+    public OutputStream decorateLogger(@NonNull Computer computer, OutputStream logger) throws IOException, InterruptedException {
+        return super.decorateLogger(computer, logger);
     }
 
     private void logLine(Run<?, ?> run, String line) {

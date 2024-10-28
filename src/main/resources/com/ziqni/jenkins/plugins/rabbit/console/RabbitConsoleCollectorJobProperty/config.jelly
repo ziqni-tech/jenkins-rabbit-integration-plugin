@@ -1,63 +1,31 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:t="/lib/hudson">
 
-    <!-- Checkbox to enable/disable this functionality -->
-    <f:entry title="RabbitMQ console publisher" field="enableCollector">
-        <f:checkbox/>
-    </f:entry>
+    <f:block>
+        <!-- Input field for Exchange Name -->
+        <f:entry title="Exchange name" field="exchangeName" class="conditional-field">
+            <f:textbox/>
+        </f:entry>
 
-    <div class="optionalBlock-container jenkins-form-item">
-        <div class="form-container">
-            <f:block>
-                <!-- Input field for Exchange Name -->
-                <f:entry title="Exchange name" field="exchangeName" class="conditional-field">
-                    <f:textbox/>
-                </f:entry>
+        <!-- Input field for Routing Key -->
+        <f:entry title="Routing key" field="routingKey" class="conditional-field">
+            <f:textbox/>
+        </f:entry>
 
-                <!-- Input field for Routing Key -->
-                <f:entry title="Routing key" field="routingKey" class="conditional-field">
-                    <f:textbox/>
-                </f:entry>
+        <!-- Input field for Start Publishing Trigger -->
+        <f:entry title="Start publishing if the console message contains (Optional)" field="startPublishingIfMessageContains" class="conditional-field">
+            <f:textbox/>
+        </f:entry>
 
-                <!-- Input field for Start Publishing Trigger -->
-                <f:entry title="Start publishing if the console message contains (Optional)" field="startPublishingIfMessageContains" class="conditional-field">
-                    <f:textbox/>
-                </f:entry>
+        <!-- Input field for Stop Publishing Trigger -->
+        <f:entry title="Stop publishing if the console message contains (Optional)" field="stopPublishingIfMessageContains" class="conditional-field">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="${%Custom template (Optional)}" field="template" class="conditional-field">
+            <f:textarea />
+        </f:entry>
+    </f:block>
 
-                <!-- Input field for Stop Publishing Trigger -->
-                <f:entry title="Stop publishing if the console message contains (Optional)" field="stopPublishingIfMessageContains" class="conditional-field">
-                    <f:textbox/>
-                </f:entry>
-                <f:entry title="${%Custom template (Optional)}" field="template" class="conditional-field">
-                    <f:textarea />
-                </f:entry>
-            </f:block>
-        </div>
-    </div>
 
-    <!-- JavaScript to handle visibility of exchangeName and routingKey etc based on enableCollector checkbox -->
-    <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function () {
-            // Get references to the elements
-            var enableCheckbox = document.querySelector("[name='_.enableCollector']");
-            var conditionalFields = document.querySelectorAll(".conditional-field");
-
-            if (enableCheckbox) {
-                // Function to show/hide fields based on checkbox state
-                function toggleFields() {
-                    var isEnabled = enableCheckbox.checked;
-                    conditionalFields.forEach(function (field) {
-                        field.style.display = isEnabled ? '' : 'none';
-                    });
-                }
-
-                // Initialize visibility based on current state
-                toggleFields();
-
-                // Add event listener to update visibility when checkbox changes
-                enableCheckbox.addEventListener("change", toggleFields);
-            }
-        });
-    </script>
 
 </j:jelly>

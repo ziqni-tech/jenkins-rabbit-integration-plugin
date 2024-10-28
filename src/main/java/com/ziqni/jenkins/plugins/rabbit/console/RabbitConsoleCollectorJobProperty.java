@@ -1,18 +1,22 @@
 package com.ziqni.jenkins.plugins.rabbit.console;
 
+import hudson.EnvVars;
 import hudson.Extension;
-import hudson.model.Job;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
-import jenkins.model.ParameterizedJobMixIn;
+import hudson.FilePath;
+import hudson.Launcher;
+import hudson.console.ConsoleLogFilter;
+import hudson.model.*;
+import hudson.tasks.BuildWrapperDescriptor;
+import jenkins.tasks.SimpleBuildWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.DataBoundConstructor;
 import com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildPublisher;
 
-public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
+import java.io.IOException;
 
-    private Boolean enableCollector;
+public class RabbitConsoleCollectorJobProperty extends SimpleBuildWrapper {
+
     private String exchangeName;
     private String template;
     private String routingKey;
@@ -22,15 +26,13 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
     /**
      * Creates instance with specified parameters.
      *
-     * @param enableCollector is enabled.
      * @param exchangeName the broker name.
      * @param routingKey the routing key.
      */
     @DataBoundConstructor
-    public RabbitConsoleCollectorJobProperty(Boolean enableCollector, String exchangeName, String routingKey,
+    public RabbitConsoleCollectorJobProperty(String exchangeName, String routingKey,
                                              String startPublishingIfMessageContains, String stopPublishingIfMessageContains,
                                              String template) {
-        this.enableCollector = enableCollector;
         this.exchangeName = exchangeName;
         this.template = template;
 
@@ -53,21 +55,22 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
         }
     }
 
-    public boolean isEnableCollector() {
-        return enableCollector;
-    }
-
-    public Boolean getEnableCollector() {
-        return enableCollector;
-    }
-
-    @DataBoundSetter
-    public void setEnableCollector(Boolean enableCollector) {
-        this.enableCollector = enableCollector;
-    }
-
     public String getExchangeName() {
         return exchangeName;
+    }
+
+    @Override
+    public void setUp(Context context, Run<?, ?> build, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        listener.getLogger().println("RabbitConsoleLogBuildWrapper: Setting up environment...");
+        // You can add environment variables here if needed
+        context.env("RABBIT_ROUTING_KEY", routingKey);
+    }
+
+    @Override
+    public void setUp(Context context, Run<?, ?> build, FilePath workspace, Launcher launcher, TaskListener listener, EnvVars initialEnvironment) throws IOException, InterruptedException {
+        listener.getLogger().println("RabbitConsoleLogBuildWrapper: Setting up environment...");
+        // You can add environment variables here if needed
+        context.env("RABBIT_ROUTING_KEY", routingKey);
     }
 
     @DataBoundSetter
@@ -112,16 +115,23 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
         this.template = template;
     }
 
+    @Override
+    public ConsoleLogFilter createLoggerDecorator(Run<?, ?> run) {
+        // Ensure that this returns a filter to decorate the console log
+        return new RabbitConsoleLogFilter(TaskListener.NULL, this);
+    }
+
     @Extension
-    public static class DescriptorImpl extends JobPropertyDescriptor {
+    public static class DescriptorImpl extends BuildWrapperDescriptor {
+
         @Override
         public String getDisplayName() {
-            return "Console Collector Configuration";
+            return "RabbitMQ console collector";
         }
 
         @Override
-        public boolean isApplicable(Class<? extends Job> jobType) {
-            return ParameterizedJobMixIn.ParameterizedJob.class.isAssignableFrom(jobType);
+        public boolean isApplicable(AbstractProject<?, ?> item) {
+            return true;
         }
     }
 }
