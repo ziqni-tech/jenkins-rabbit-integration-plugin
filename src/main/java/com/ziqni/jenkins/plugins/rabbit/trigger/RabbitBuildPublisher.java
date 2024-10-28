@@ -115,6 +115,25 @@ public class RabbitBuildPublisher extends Notifier {
     }
 
     /**
+     * Gets template.
+     *
+     * @return the template.
+     */
+    public String getTemplate() {
+        return template;
+    }
+
+    /**
+     * Sets template.
+     *
+     * @param template the template.
+     */
+    public RabbitBuildPublisher setTemplate(String template) {
+        this.template = template;
+        return this;
+    }
+
+    /**
      * Gets result as string.
      *
      * @param result the result.
