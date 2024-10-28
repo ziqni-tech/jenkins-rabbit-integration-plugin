@@ -120,7 +120,7 @@ To publish build results, add the following to your job configuration:
 
 * Exchange Name: The name of the exchange to which the build result will be published.
 * Routing Key: Specify a routing key that determines which queue the message should be delivered to.
-* Template: This field allows you to specify a custom message template to be used when publishing build information to RabbitMQ. If left empty, the default template below will be used
+* Template (Optional): This field allows you to specify a custom message template to be used when publishing build information to RabbitMQ. If left empty, the default template below will be used
 
 ***Published JSON Format: Below is an example of the JSON format that gets published:***
 
@@ -131,7 +131,7 @@ To publish build results, add the following to your job configuration:
         "status": "SUCCESS"
     }
 
-# Custom Template for RabbitMQ Build Publisher
+### Custom Template for RabbitMQ Build Publisher
 
 You can customize the template by specifying your own JSON string. When creating a custom template, you can use any of the environment variables available in Jenkins to dynamically insert information. For a full list of available environment variables, refer to the Jenkins Environment Variables page.
 
