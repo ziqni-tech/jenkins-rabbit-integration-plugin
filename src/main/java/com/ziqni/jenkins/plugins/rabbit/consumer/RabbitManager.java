@@ -1,6 +1,7 @@
 package com.ziqni.jenkins.plugins.rabbit.consumer;
 
 import com.ziqni.jenkins.plugins.rabbit.configuration.RabbitConfiguration;
+import com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier;
 import hudson.util.Secret;
 import com.ziqni.jenkins.plugins.rabbit.consumer.channels.PublishRMQChannel;
 import com.ziqni.jenkins.plugins.rabbit.consumer.extensions.ServerOperator;

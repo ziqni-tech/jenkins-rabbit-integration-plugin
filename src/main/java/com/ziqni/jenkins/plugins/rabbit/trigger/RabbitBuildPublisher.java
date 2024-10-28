@@ -2,6 +2,7 @@ package com.ziqni.jenkins.plugins.rabbit.trigger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 
+import com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier;
 import com.ziqni.jenkins.plugins.rabbit.utils.Utils;
 import hudson.Launcher;
 import hudson.Extension;
@@ -30,6 +31,8 @@ import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.concurrent.Future;
 import java.nio.charset.StandardCharsets;
+
+import static com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier.HEADER_MACHINE_ID;
 
 /**
  * The extension publish build result using rabbitmq.
@@ -159,12 +162,14 @@ public class RabbitBuildPublisher extends Notifier {
         Map<String, Object> headers = new HashMap<>();
         Jenkins jenkins = Jenkins.get();
         headers.put(HEADER_JENKINS_URL, jenkins.getRootUrl());
+        headers.put(HEADER_MACHINE_ID, MachineIdentifier.getUniqueMachineId());
         builder.headers(headers);
 
         // Publish message
         PublishChannel ch = PublishChannelFactory.getPublishChannel();
         if (ch != null && ch.isOpen()) {
             // return value is not needed if you don't need to wait.
+            envVars.put("BUILD_STATUS",getResultAsString(build.getResult()));
             String response = prepareResponse(build, envVars);
 
             Future<PublishResult> future = ch.publish(

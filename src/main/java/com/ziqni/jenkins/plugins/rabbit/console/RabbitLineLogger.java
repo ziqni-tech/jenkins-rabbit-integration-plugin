@@ -5,6 +5,7 @@ import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannel;
 import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannelFactory;
 import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishResult;
 import com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildTrigger;
+import com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier;
 import com.ziqni.jenkins.plugins.rabbit.utils.Utils;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.Run;
@@ -15,14 +16,13 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
-import static com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildPublisher.LOG_HEADER;
-import static com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildPublisher.TEXT_CONTENT_TYPE;
+import static com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildPublisher.*;
+import static com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier.HEADER_MACHINE_ID;
 
 public class RabbitLineLogger extends LineTransformationOutputStream.Delegating {
 
@@ -114,6 +114,8 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
         headers.put("display-name", run.getDisplayName());
         // Add a header to stop the message from being displayed in the console
         headers.put("stop-message-console", isPublishing.get() ? "false" : "true");
+        // Add a header with the display name of the run
+        headers.put(HEADER_MACHINE_ID, MachineIdentifier.getUniqueMachineId());
 
         // Add the headers
         builder.headers(headers);

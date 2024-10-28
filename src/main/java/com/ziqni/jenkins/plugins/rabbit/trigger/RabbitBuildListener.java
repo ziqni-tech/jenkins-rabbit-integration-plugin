@@ -1,5 +1,6 @@
 package com.ziqni.jenkins.plugins.rabbit.trigger;
 
+import com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier;
 import hudson.Extension;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
@@ -7,11 +8,14 @@ import net.sf.json.JSONSerializer;
 import com.ziqni.jenkins.plugins.rabbit.consumer.extensions.MessageQueueListener;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CopyOnWriteArraySet;
+
+import static com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier.HEADER_MACHINE_ID;
 
 /**
  * The extension listen application message then call triggers.
@@ -87,23 +91,30 @@ public class RabbitBuildListener extends MessageQueueListener {
     @Override
     public void onReceive(String queueName, String contentType, Map<String, Object> headers, byte[] body) {
 
-        String msg = new String(body, StandardCharsets.UTF_8);
+        String msg = new String(body, StandardCharsets.UTF_8).trim();
+
+        if(headers.containsKey(HEADER_MACHINE_ID) && headers.get(HEADER_MACHINE_ID).toString().equals(MachineIdentifier.getUniqueMachineId())){
+            LOGGER.log(Level.WARNING, "This is a recursive call from within the system. Blocking for all projects, caused by {0}", headers.get(HEADER_MACHINE_ID));
+            return;
+        }
 
         try {
             JSONObject json = (JSONObject) JSONSerializer.toJSON(msg);
-            for (RabbitBuildTrigger<?> t : triggers) {
+            for (RabbitBuildTrigger<?> rabbitBuildTrigger : triggers) {
 
-                if (t.getRemoteBuildToken() == null) {
-                    LOGGER.log(Level.WARNING, "ignoring AMQP trigger for project {0}: no token set", t.getProjectName());
+                final var tokenReceived = json.containsKey(KEY_TOKEN) ? json.getString(KEY_TOKEN) : null;
+                final var tokenOk = tokenMatched(tokenReceived,rabbitBuildTrigger.getRemoteBuildToken());
+
+                if (!tokenOk) {
+                    LOGGER.log(Level.WARNING, "Token mismatched for project {0}", rabbitBuildTrigger.getProjectName());
                     continue;
                 }
 
-                if (t.getProjectName().equals(json.getString(KEY_PROJECT))
-                        && t.getRemoteBuildToken().equals(json.getString(KEY_TOKEN))) {
+                if (rabbitBuildTrigger.getProjectName().equals(json.getString(KEY_PROJECT))) {
                     if (json.containsKey(KEY_PARAMETER)) {
-                        t.scheduleBuild(queueName, json.getJSONArray(KEY_PARAMETER));
+                        rabbitBuildTrigger.scheduleBuild(queueName, json.getJSONArray(KEY_PARAMETER));
                     } else {
-                        t.scheduleBuild(queueName, null);
+                        rabbitBuildTrigger.scheduleBuild(queueName, null);
                     }
                 }
             }
@@ -111,5 +122,12 @@ public class RabbitBuildListener extends MessageQueueListener {
             LOGGER.warning("JSON format string: " + msg);
             LOGGER.warning(e.getMessage());
         }
+    }
+
+    private boolean tokenMatched(String tokenReceived, String tokenConfigured) {
+        if(Objects.isNull(tokenConfigured) || tokenConfigured.isEmpty())
+            return true;
+
+        return tokenConfigured.equals(tokenReceived);
     }
 }
