@@ -52,7 +52,7 @@ ___Before you begin, you need to add your RabbitMQ username and password to the 
 To configure the consumer, go to *Jenkins > Manage Jenkins > Configure System > RabbitMQ Consumer*.
 
 Here you can set the RabbitMQ server URL, username, password, and other settings.
-
+![gloabl-config.png](images/gloabl-config.png)
 ---
 [Build] Trigger configuration
 ------------------------

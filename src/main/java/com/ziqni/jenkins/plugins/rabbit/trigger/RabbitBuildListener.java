@@ -86,31 +86,30 @@ public class RabbitBuildListener extends MessageQueueListener {
      */
     @Override
     public void onReceive(String queueName, String contentType, Map<String, Object> headers, byte[] body) {
-        if (CONTENT_TYPE_JSON.equals(contentType)) {
-            String msg = new String(body, StandardCharsets.UTF_8);
 
-            try {
-                JSONObject json = (JSONObject) JSONSerializer.toJSON(msg);
-                for (RabbitBuildTrigger<?> t : triggers) {
+        String msg = new String(body, StandardCharsets.UTF_8);
 
-                    if (t.getRemoteBuildToken() == null) {
-                        LOGGER.log(Level.WARNING, "ignoring AMQP trigger for project {0}: no token set", t.getProjectName());
-                        continue;
-                    }
+        try {
+            JSONObject json = (JSONObject) JSONSerializer.toJSON(msg);
+            for (RabbitBuildTrigger<?> t : triggers) {
 
-                    if (t.getProjectName().equals(json.getString(KEY_PROJECT))
-                            && t.getRemoteBuildToken().equals(json.getString(KEY_TOKEN))) {
-                        if (json.containsKey(KEY_PARAMETER)) {
-                            t.scheduleBuild(queueName, json.getJSONArray(KEY_PARAMETER));
-                        } else {
-                            t.scheduleBuild(queueName, null);
-                        }
+                if (t.getRemoteBuildToken() == null) {
+                    LOGGER.log(Level.WARNING, "ignoring AMQP trigger for project {0}: no token set", t.getProjectName());
+                    continue;
+                }
+
+                if (t.getProjectName().equals(json.getString(KEY_PROJECT))
+                        && t.getRemoteBuildToken().equals(json.getString(KEY_TOKEN))) {
+                    if (json.containsKey(KEY_PARAMETER)) {
+                        t.scheduleBuild(queueName, json.getJSONArray(KEY_PARAMETER));
+                    } else {
+                        t.scheduleBuild(queueName, null);
                     }
                 }
-            } catch (JSONException e) {
-                LOGGER.warning("JSON format string: " + msg);
-                LOGGER.warning(e.getMessage());
             }
+        } catch (JSONException e) {
+            LOGGER.warning("JSON format string: " + msg);
+            LOGGER.warning(e.getMessage());
         }
     }
 }
