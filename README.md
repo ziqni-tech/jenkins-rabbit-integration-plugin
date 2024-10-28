@@ -108,6 +108,7 @@ If disabled, all associated settings (like Broker Name and Routing Key) will be 
 * Routing Key: Specify a routing key that determines which queue the message should be delivered to.
 * Start Publishing if Message Contains: The plugin will start publishing the console output to RabbitMQ if the console output contains the specified text.
 * Stop Publishing if Message Contains: The plugin will stop publishing the console output to RabbitMQ if the console output contains the specified text.
+* Template (Optional): This field allows you to specify a custom message template to be used when publishing console information to RabbitMQ. If left empty, the default template below will be used
 
 Published with content type application/text
 
