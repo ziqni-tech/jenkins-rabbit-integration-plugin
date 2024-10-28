@@ -10,4 +10,18 @@
     <p>
         If disabled, all associated settings (like Broker Name and Routing Key) will be ignored, and the plugin will not interact with RabbitMQ for this job.
     </p>
+
+    <h2>RabbitMQ Headers</h2>
+    <p>
+        In addition to the custom message template, the following RabbitMQ headers will also be set when publishing the message:
+    </p>
+    <ul>
+        <li><strong>line-number</strong>: The current line number in the console log.</li>
+        <li><strong>job-name</strong>: The number of the Jenkins job.</li>
+        <li><strong>display-name</strong>: The display name of the current run.</li>
+        <li><strong>stop-message-console</strong>: Indicates whether to stop the message from being displayed in the console. If publishing is enabled, this value will be set to <code>false</code>, otherwise it will be set to <code>true</code>.</li>
+    </ul>
+    <p>
+        These headers provide additional context for the published messages, which can be used for further processing or filtering on the RabbitMQ side.
+    </p>
 </div>
