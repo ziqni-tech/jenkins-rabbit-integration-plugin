@@ -18,4 +18,8 @@
   <f:entry title="${%Routing key}" field="routingKey">
     <f:textbox />
   </f:entry>
+  <f:entry title="${%Custom temple (Optional)}" field="template">
+    <f:textarea />
+  </f:entry>
+
 </j:jelly>

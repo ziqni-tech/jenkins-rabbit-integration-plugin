@@ -25,6 +25,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.concurrent.Future;
 import java.nio.charset.StandardCharsets;
@@ -50,6 +51,7 @@ public class RabbitBuildPublisher extends Notifier {
 
     private String exchangeName;
     private String routingKey;
+    private String template;
 
     /**
      * Creates instance with specified parameters.
@@ -58,12 +60,17 @@ public class RabbitBuildPublisher extends Notifier {
      * @param routingKey the routing key.
      */
     @DataBoundConstructor
-    public RabbitBuildPublisher(String exchangeName, String routingKey) {
+    public RabbitBuildPublisher(String exchangeName, String routingKey, String template) {
         this.exchangeName = exchangeName;
         if (StringUtils.isBlank(routingKey)) {
             this.routingKey = RabbitBuildPublisher.class.getPackage().getName();
         } else {
             this.routingKey = routingKey;
+        }
+        if (template == null || StringUtils.isBlank(template.trim())) {
+            this.template = null;
+        } else {
+            this.template = template;
         }
     }
 
@@ -132,35 +139,34 @@ public class RabbitBuildPublisher extends Notifier {
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
-        if (exchangeName == null || exchangeName.length() == 0) {
+        if (exchangeName == null || exchangeName.isEmpty()) {
             return true;
         }
 
-        // Generate message (JSON format)
-        JSONObject json = new JSONObject();
-        json.put(KEY_PROJECT, build.getProject().getName());
-        json.put(KEY_NUMBER, build.getNumber());
-        json.put(KEY_STATUS, getResultAsString(build.getResult()));
+        // Get environment variables from the build
+        Map<String, String> envVars = build.getEnvironment(listener);
 
         // Basic property
         BasicProperties.Builder builder = new BasicProperties.Builder();
         builder.appId(RabbitBuildTrigger.PLUGIN_APPID);
-        builder.contentType(JSON_CONTENT_TYPE);
+
+        if(Objects.nonNull(this.template)) {
+            builder.contentType(JSON_CONTENT_TYPE);
+        }
 
         // Header
-        Map<String, Object> headers = new HashMap<String, Object>();
-        Jenkins jenkins = Jenkins.getInstance();
-        if (jenkins != null) {
-            headers.put(HEADER_JENKINS_URL, jenkins.getRootUrl());
-        }
+        Map<String, Object> headers = new HashMap<>();
+        Jenkins jenkins = Jenkins.get();
+        headers.put(HEADER_JENKINS_URL, jenkins.getRootUrl());
         builder.headers(headers);
 
         // Publish message
         PublishChannel ch = PublishChannelFactory.getPublishChannel();
         if (ch != null && ch.isOpen()) {
             // return value is not needed if you don't need to wait.
-            Future<PublishResult> future = ch.publish(exchangeName, routingKey, builder.build(),
-                                                      json.toString().getBytes(StandardCharsets.UTF_8));
+            String jsonString = prepareResponse(build, envVars);
+
+            Future<PublishResult> future = ch.publish(exchangeName, routingKey, builder.build(), jsonString.getBytes(StandardCharsets.UTF_8));
 
             // Wait until publish is completed.
             try {
@@ -177,6 +183,33 @@ public class RabbitBuildPublisher extends Notifier {
             }
         }
         return true;
+    }
+
+    /**
+     * Prepare response.
+     * @param build build
+     * @param envVars environment variables
+     * @return response
+     */
+    private String prepareResponse(AbstractBuild<?, ?> build, Map<String, String> envVars){
+        if(this.template == null){
+            // Generate message (JSON format)
+            JSONObject json = new JSONObject();
+            json.put(KEY_PROJECT, build.getProject().getName());
+            json.put(KEY_NUMBER, build.getNumber());
+            json.put(KEY_STATUS, getResultAsString(build.getResult()));
+            return json.toString();
+        }
+        else {
+
+            var customTemplate = this.template;
+
+            for (Map.Entry<String, String> entry : envVars.entrySet()) {
+                 customTemplate = this.template.replace("${" + entry.getKey() + "}", entry.getValue());
+            }
+
+            return customTemplate;
+        }
     }
 
     /**
