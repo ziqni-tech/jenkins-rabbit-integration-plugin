@@ -5,14 +5,17 @@ import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannel;
 import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannelFactory;
 import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishResult;
 import com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildTrigger;
+import com.ziqni.jenkins.plugins.rabbit.utils.Utils;
 import hudson.console.LineTransformationOutputStream;
 import hudson.model.Run;
+import hudson.model.TaskListener;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,14 +30,18 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
     private final RabbitConsoleCollectorJobProperty property;
     private final AtomicInteger counter = new AtomicInteger(0);
     private final boolean hasStopPublishingIfMessageContains;
-    private final Run build;
+    private final Run<?,?> run;
+    private final Map<String, String> envVars;
+    private final boolean hasTemplate;
 
     private final AtomicBoolean isPublishing = new AtomicBoolean(false);
 
-    public RabbitLineLogger(OutputStream logger, RabbitConsoleCollectorJobProperty property, Run build) {
+    public RabbitLineLogger(OutputStream logger, RabbitConsoleCollectorJobProperty property, Run<?,?> run, TaskListener listener) throws IOException, InterruptedException {
         super(logger); // Pass the underlying output stream to the superclass
         this.property = property;
-        this.build = build;
+        this.run = run;
+        this.envVars = run.getEnvironment(listener);
+        this.hasTemplate = property.getTemplate() != null && !property.getTemplate().trim().isEmpty() && !property.getTemplate().contains("$");
 
         // If the property is null or empty, set the publishing flag to true
         if(property.getStartPublishingIfMessageContains() == null && property.getStartPublishingIfMessageContains().trim().isEmpty()){
@@ -49,7 +56,7 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
     protected void eol(byte[] b, int len) throws IOException {
 
         // Increment the counter
-        counter.incrementAndGet();
+        final var lineNumber = counter.incrementAndGet();
 
         // Convert the byte array to a string
         String line = new String(b, 0, len, StandardCharsets.UTF_8);
@@ -71,7 +78,20 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
         }
 
         // Process the line
-        publish(line);
+        if(hasTemplate){
+            String tmp = Utils.injectEnvVars(run,envVars,property.getTemplate());
+
+            if(tmp.contains("\"${BUILD_CONSOLE_LINE}\"")){
+                tmp = tmp.replace("\"${BUILD_CONSOLE_LINE}\"",line.replace("\"","\\\""));
+            }
+            else {
+                tmp = tmp.replace("${BUILD_CONSOLE_LINE}",line);
+            }
+            publish(tmp.replace("${BUILD_CONSOLE_LINE_NUMBER}",String.valueOf(lineNumber)));
+        }
+        else {
+            publish(line);
+        }
     }
 
     protected void publish(String line){
@@ -89,9 +109,9 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
         // Add a header with the line number
         headers.put("line-number", counter.get());
         // Add a header with the job name
-        headers.put("job-name", build.getNumber());
-        // Add a header with the display name of the build
-        headers.put("display-name", build.getDisplayName());
+        headers.put("job-name", run.getNumber());
+        // Add a header with the display name of the run
+        headers.put("display-name", run.getDisplayName());
         // Add a header to stop the message from being displayed in the console
         headers.put("stop-message-console", isPublishing.get() ? "false" : "true");
 
@@ -104,7 +124,7 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
             // return value is not needed if you don't need to wait.
             Future<PublishResult> future = ch.publish(
                     this.property.getExchangeName(),
-                    this.property.getRoutingKey(),
+                    Utils.injectEnvVars(run, envVars, this.property.getRoutingKey()),
                     builder.build(),
                     line.getBytes(StandardCharsets.UTF_8)
             );

@@ -165,9 +165,14 @@ public class RabbitBuildPublisher extends Notifier {
         PublishChannel ch = PublishChannelFactory.getPublishChannel();
         if (ch != null && ch.isOpen()) {
             // return value is not needed if you don't need to wait.
-            String jsonString = prepareResponse(build, envVars);
+            String response = prepareResponse(build, envVars);
 
-            Future<PublishResult> future = ch.publish(exchangeName, routingKey, builder.build(), jsonString.getBytes(StandardCharsets.UTF_8));
+            Future<PublishResult> future = ch.publish(
+                    exchangeName,
+                    Utils.injectEnvVars(build, envVars, routingKey),
+                    builder.build(),
+                    response.getBytes(StandardCharsets.UTF_8)
+            );
 
             // Wait until publish is completed.
             try {
@@ -193,7 +198,7 @@ public class RabbitBuildPublisher extends Notifier {
      * @return response
      */
     private String prepareResponse(AbstractBuild<?, ?> build, Map<String, String> envVars){
-        return Utils.prepareResponse(build, envVars, this.template, () -> {
+        return Utils.injectEnvVars(build, envVars, this.template, () -> {
             // Generate message (JSON format)
             JSONObject json = new JSONObject();
             json.put(KEY_PROJECT, build.getProject().getName());

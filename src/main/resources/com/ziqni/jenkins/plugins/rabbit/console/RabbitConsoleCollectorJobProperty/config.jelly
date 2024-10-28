@@ -28,6 +28,9 @@
                 <f:entry title="Stop publishing if the console message contains (Optional)" field="stopPublishingIfMessageContains" class="conditional-field">
                     <f:textbox/>
                 </f:entry>
+                <f:entry title="${%Custom template (Optional)}" field="template" class="conditional-field">
+                    <f:textarea />
+                </f:entry>
             </f:block>
         </div>
     </div>

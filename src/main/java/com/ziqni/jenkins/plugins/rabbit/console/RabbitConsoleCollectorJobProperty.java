@@ -14,6 +14,7 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
 
     private Boolean enableCollector;
     private String exchangeName;
+    private String template;
     private String routingKey;
     private String startPublishingIfMessageContains;
     private String stopPublishingIfMessageContains;
@@ -26,9 +27,12 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
      * @param routingKey the routing key.
      */
     @DataBoundConstructor
-    public RabbitConsoleCollectorJobProperty(Boolean enableCollector, String exchangeName, String routingKey, String startPublishingIfMessageContains, String stopPublishingIfMessageContains) {
+    public RabbitConsoleCollectorJobProperty(Boolean enableCollector, String exchangeName, String routingKey,
+                                             String startPublishingIfMessageContains, String stopPublishingIfMessageContains,
+                                             String template) {
         this.enableCollector = enableCollector;
         this.exchangeName = exchangeName;
+        this.template = template;
 
         if (StringUtils.isBlank(routingKey)) {
             this.routingKey = RabbitBuildPublisher.class.getPackage().getName();
@@ -98,6 +102,16 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
     public RabbitConsoleCollectorJobProperty setStopPublishingIfMessageContains(String stopPublishingIfMessageContains) {
         this.stopPublishingIfMessageContains = stopPublishingIfMessageContains;
         return this;
+    }
+
+    public String getTemplate() {
+        return template;
+    }
+
+
+    @DataBoundSetter
+    public void setTemplate(String template) {
+        this.template = template;
     }
 
     @Extension

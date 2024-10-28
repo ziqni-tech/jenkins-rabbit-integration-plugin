@@ -1,0 +1,52 @@
+<h1>Custom Template for RabbitMQ Build Publisher</h1>
+<p>
+    This field allows you to specify a custom message template to be used when publishing the line information to RabbitMQ. If left empty, the default template below will be used:
+</p>
+<pre><code>
+${BUILD_CONSOLE_LINE}
+</code></pre>
+<p>
+    You can customize the template by specifying your own string. When creating a custom template, you can use any of the environment variables available in Jenkins to dynamically insert information. For a full list of available environment variables, refer to the <a href="http://jenkins.bronzegate.local:8080/env-vars.html" target="_blank">Jenkins Environment Variables</a> page.
+</p>
+<p>
+    For example, you can define a template like this:
+</p>
+<pre><code>
+{
+    "project": "${JOB_NAME}",
+    "number": ${BUILD_NUMBER},
+    "status": "${BUILD_STATUS}",
+    "url": "${BUILD_URL}",
+    "line": "${BUILD_CONSOLE_LINE}",
+    "lineNumber": ${BUILD_CONSOLE_LINE_NUMBER}
+}
+</code></pre>
+<p>
+    In the example above:
+<ul>
+    <li><code>${JOB_NAME}</code> will be replaced with the name of the Jenkins job.</li>
+    <li><code>${BUILD_NUMBER}</code> will be replaced with the build number.</li>
+    <li><code>${BUILD_STATUS}</code> will be replaced with the current status of the build (e.g., SUCCESS, FAILURE).</li>
+    <li><code>${BUILD_CONSOLE_LINE}</code> will be replaced with the line.</li>
+    <li><code>${BUILD_CONSOLE_LINE_NUMBER}</code> will be replaced with the line number.</li>
+</ul>
+<p>
+    Note that if your template surrounds <code>${BUILD_CONSOLE_LINE}</code> with double quotes, the line will be escaped to prevent any issues with JSON formatting.
+</p>
+
+<h2>RabbitMQ Headers</h2>
+<p>
+    In addition to the custom message template, the following RabbitMQ headers will also be set when publishing the message:
+</p>
+<ul>
+    <li><strong>line-number</strong>: The current line number in the console log.</li>
+    <li><strong>job-name</strong>: The number of the Jenkins job.</li>
+    <li><strong>display-name</strong>: The display name of the current run.</li>
+    <li><strong>stop-message-console</strong>: Indicates whether to stop the message from being displayed in the console. If publishing is enabled, this value will be set to <code>false</code>, otherwise it will be set to <code>true</code>.</li>
+</ul>
+<p>
+    These headers provide additional context for the published messages, which can be used for further processing or filtering on the RabbitMQ side.
+</p>
+<p>
+    Feel free to use any other available environment variables to create a template that suits your needs.
+</p>
