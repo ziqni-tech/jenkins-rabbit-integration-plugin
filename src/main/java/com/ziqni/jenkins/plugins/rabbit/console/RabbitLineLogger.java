@@ -65,14 +65,13 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
         }
         else if(hasStopPublishingIfMessageContains && isPublishing.get()) {
             if (line.contains(property.getStopPublishingIfMessageContains())) {
-                isPublishing.set(false);
+                isPublishing.set(false);// Process the line
+                publish(line);
             }
         }
 
         // Process the line
-        if(isPublishing.get()) {
-            publish(line);
-        }
+        publish(line);
     }
 
     protected void publish(String line){
@@ -87,9 +86,16 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
 
         // Headers
         Map<String,Object> headers = new HashMap<>();
+        // Add a header with the line number
         headers.put("line-number", counter.get());
+        // Add a header with the job name
         headers.put("job-name", build.getNumber());
+        // Add a header with the display name of the build
         headers.put("display-name", build.getDisplayName());
+        // Add a header to stop the message from being displayed in the console
+        headers.put("stop-message-console", isPublishing.get() ? "false" : "true");
+
+        // Add the headers
         builder.headers(headers);
 
         // Publish message
