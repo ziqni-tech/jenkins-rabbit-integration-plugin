@@ -44,7 +44,7 @@ Important notes
 
 ---
 
-Consumer configuration
+[Global] Consumer configuration
 ------------------------
 
 ___Before you begin, you need to add your RabbitMQ username and password to the Jenkins credentials store___.
@@ -54,7 +54,7 @@ To configure the consumer, go to *Jenkins > Manage Jenkins > Configure System > 
 Here you can set the RabbitMQ server URL, username, password, and other settings.
 
 ---
-Build Trigger configuration
+[Build] Trigger configuration
 ------------------------
 To configure the build trigger, go to your job configuration and add the following:
 
@@ -78,12 +78,12 @@ Expected JSON Format: Below is the JSON format expected by this trigger to initi
         ]
     }
 
-### Fields Description:
+### Fields description:
 * project: The name of the Jenkins project to trigger
 * token: (Optional) A security token to authenticate the build trigger request
 * parameter: An array of parameter objects, each containing a name and a value for passing build parameters
 
-### Required Properties: 
+### Required properties: 
 
 When publishing a message to the RabbitMQ queue, the following message properties must be set:
 
@@ -94,7 +94,7 @@ When publishing a message to the RabbitMQ queue, the following message propertie
 This trigger can be used to automate builds based on messages published to a specific queue with the specified format and properties.
 
 ---
-Console output publishing
+[Build] Console output publishing
 ------------------------
 To publish console output, add the following to your job configuration:
 
@@ -112,7 +112,7 @@ If disabled, all associated settings (like Broker Name and Routing Key) will be 
 Published with content type application/text
 
 ---
-Build results publishing
+[Build] Results publishing
 ------------------------
 To publish build results, add the following to your job configuration:
 
