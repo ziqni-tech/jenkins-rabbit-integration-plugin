@@ -89,9 +89,8 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
     }
 
     @DataBoundSetter
-    public RabbitConsoleCollectorJobProperty setStartPublishingIfMessageContains(String startPublishingIfMessageContains) {
+    public void setStartPublishingIfMessageContains(String startPublishingIfMessageContains) {
         this.startPublishingIfMessageContains = startPublishingIfMessageContains;
-        return this;
     }
 
     public String getStopPublishingIfMessageContains() {
@@ -99,9 +98,8 @@ public class RabbitConsoleCollectorJobProperty extends JobProperty<Job<?, ?>> {
     }
 
     @DataBoundSetter
-    public RabbitConsoleCollectorJobProperty setStopPublishingIfMessageContains(String stopPublishingIfMessageContains) {
+    public void setStopPublishingIfMessageContains(String stopPublishingIfMessageContains) {
         this.stopPublishingIfMessageContains = stopPublishingIfMessageContains;
-        return this;
     }
 
     public String getTemplate() {
