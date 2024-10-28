@@ -2,7 +2,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:t="/lib/hudson">
 
     <!-- Checkbox to enable/disable this functionality -->
-    <f:entry title="Robo Rabbit console publisher" field="enableCollector">
+    <f:entry title="RabbitMQ console publisher" field="enableCollector">
         <f:checkbox/>
     </f:entry>
 

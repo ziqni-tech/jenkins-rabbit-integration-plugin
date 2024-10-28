@@ -73,8 +73,8 @@ public class RabbitMQConsumer extends Plugin {
     @Exported
     public List<QueueState> getQueues() {
         List<QueueState> stats = new LinkedList<QueueState>();
-        List<RabbitmqConsumeItem> queues = RabbitConfiguration.get().getConsumeItems();
-        for (RabbitmqConsumeItem queue : queues) {
+        List<RabbitMqConsumeItem> queues = RabbitConfiguration.get().getConsumeItems();
+        for (RabbitMqConsumeItem queue : queues) {
             QueueState state = new QueueState(queue.getQueueName(), queue.getAppId(),
                     RabbitManager.getInstance().getChannelStatus(queue.getQueueName()));
             stats.add(state);

@@ -22,7 +22,7 @@ import java.util.HashSet;
  * @author rinrinne a.k.a. rin_ne
  *
  */
-public class RabbitmqConsumeItem implements Describable<RabbitmqConsumeItem> {
+public class RabbitMqConsumeItem implements Describable<RabbitMqConsumeItem> {
 
     /**
      * App ID for debug.
@@ -41,7 +41,7 @@ public class RabbitmqConsumeItem implements Describable<RabbitmqConsumeItem> {
      *            the queue name.
      */
     @DataBoundConstructor
-    public RabbitmqConsumeItem(String appId, String queueName) {
+    public RabbitMqConsumeItem(String appId, String queueName) {
         this.appId = StringUtils.stripToNull(appId);
         this.queueName = StringUtils.stripToNull(queueName);
     }
@@ -49,7 +49,7 @@ public class RabbitmqConsumeItem implements Describable<RabbitmqConsumeItem> {
     /**
      * Creates instance with no parametesrs.
      */
-    public RabbitmqConsumeItem() {
+    public RabbitMqConsumeItem() {
     }
 
     /**
@@ -90,7 +90,7 @@ public class RabbitmqConsumeItem implements Describable<RabbitmqConsumeItem> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Descriptor<RabbitmqConsumeItem> getDescriptor() {
+    public Descriptor<RabbitMqConsumeItem> getDescriptor() {
         return Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
@@ -111,7 +111,7 @@ public class RabbitmqConsumeItem implements Describable<RabbitmqConsumeItem> {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        RabbitmqConsumeItem other = (RabbitmqConsumeItem) obj;
+        RabbitMqConsumeItem other = (RabbitMqConsumeItem) obj;
         if (appId == null) {
             if (other.appId != null)
                 return false;
@@ -133,7 +133,7 @@ public class RabbitmqConsumeItem implements Describable<RabbitmqConsumeItem> {
      * @author rinrinne a.k.a. rin_ne
      */
     @Extension
-    public static class DescriptorImpl extends Descriptor<RabbitmqConsumeItem> {
+    public static class DescriptorImpl extends Descriptor<RabbitMqConsumeItem> {
         @Override
         public String getDisplayName() {
             return "";

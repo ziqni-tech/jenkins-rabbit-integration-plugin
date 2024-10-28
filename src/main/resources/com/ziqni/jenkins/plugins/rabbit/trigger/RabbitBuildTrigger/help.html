@@ -1,4 +1,4 @@
-<h1>Robo Rabbit AMQP Build Trigger</h1>
+<h1>RabbitMQ AMQP Build Trigger</h1>
 <p>
     This trigger listens to messages from RabbitMQ queues and starts a build when a relevant message is received.
 </p>
@@ -34,7 +34,7 @@
 <ul>
     <li><b>content_type:</b> Must be set to <code>application/json</code>.</li>
     <li><b>app_id:</b> Should be set to <code>robo-rabbit-remote-build</code>.</li>
-    <li><b>routingkey:</b> Should be set to the appropriate routing key value or <code>io.jenkins.plugins.roborabbit.trigger.roborabbitbuildtrigger</code>.</li>
+    <li><b>routingkey:</b> Should be set to the appropriate routing key value or <code>com.ziqni.jenkins.plugins.rabbit.trigger.rabbitbuildtrigger</code>.</li>
 </ul>
 </p>
 <p>

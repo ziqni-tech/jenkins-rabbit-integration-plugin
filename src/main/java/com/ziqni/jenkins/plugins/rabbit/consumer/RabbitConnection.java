@@ -268,7 +268,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
      * @param consumeItems
      *            the list of consume items.
      */
-    public void updateChannels(Collection<RabbitmqConsumeItem> consumeItems) {
+    public void updateChannels(Collection<RabbitMqConsumeItem> consumeItems) {
         Collection<String> uniqueQueueNames = new HashSet<String>();
 
         updatePublishChannel();
@@ -277,7 +277,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
             closeAllConsumeChannels();
         } else {
             // generate unique queue name set
-            for (RabbitmqConsumeItem i : consumeItems) {
+            for (RabbitMqConsumeItem i : consumeItems) {
                 uniqueQueueNames.add(i.getQueueName());
             }
             uniqueQueueNames.remove(null);
@@ -298,7 +298,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
      * @param consumeItems
      *            the list of consume items.
      */
-    private void createNewConsumeChannels(Collection<String> uniqueQueueNames, Collection<RabbitmqConsumeItem> consumeItems) {
+    private void createNewConsumeChannels(Collection<String> uniqueQueueNames, Collection<RabbitMqConsumeItem> consumeItems) {
         if (state != RabbitState.CONNECTED) {
             LOGGER.warn("Cannot create channel because connection is not established.");
             return;
@@ -318,7 +318,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
             for (String queueName : uniqueQueueNames) {
                 if (!existingQueueNames.contains(queueName)) {
                     Collection<String> appIds = new HashSet<String>();
-                    for (RabbitmqConsumeItem i : consumeItems) {
+                    for (RabbitMqConsumeItem i : consumeItems) {
                         if (queueName.equals(i.getQueueName())) {
                             appIds.add(i.getAppId());
                         }

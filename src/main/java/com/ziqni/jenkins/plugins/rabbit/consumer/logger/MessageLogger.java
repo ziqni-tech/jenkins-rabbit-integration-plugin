@@ -1,7 +1,7 @@
 package com.ziqni.jenkins.plugins.rabbit.consumer.logger;
 
 import hudson.Extension;
-import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitmqConsumeItem;
+import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitMqConsumeItem;
 import com.ziqni.jenkins.plugins.rabbit.consumer.extensions.MessageQueueListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class MessageLogger extends MessageQueueListener {
      * @return the application id.
      */
     public String getAppId() {
-        return RabbitmqConsumeItem.DEBUG_APPID;
+        return RabbitMqConsumeItem.DEBUG_APPID;
     }
 
     /**

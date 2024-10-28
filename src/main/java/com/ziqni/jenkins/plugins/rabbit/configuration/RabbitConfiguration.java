@@ -8,7 +8,7 @@ import hudson.util.FormValidation;
 
 import com.ziqni.jenkins.plugins.rabbit.consumer.Messages;
 import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitManager;
-import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitmqConsumeItem;
+import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitMqConsumeItem;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import jenkins.model.GlobalConfiguration;
@@ -42,7 +42,7 @@ import java.security.GeneralSecurityException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Global configuration for the Robo Rabbit AMPQ Consumer Plugin.
+ * Global configuration for the RabbitMQ AMPQ Consumer Plugin.
  */
 @Extension
 public class RabbitConfiguration extends GlobalConfiguration {
@@ -59,7 +59,7 @@ public class RabbitConfiguration extends GlobalConfiguration {
     private boolean enableDebug;
     private String credentialsId;
     private boolean enableConsumer;
-    private List<RabbitmqConsumeItem> consumeItems;
+    private List<RabbitMqConsumeItem> consumeItems;
     private long watchdogPeriod = ReconnectTimer.DEFAULT_RECCURENCE_TIME;
 
     public RabbitConfiguration() {
@@ -83,7 +83,7 @@ public class RabbitConfiguration extends GlobalConfiguration {
      *            the flag to enable debug.
      */
     @DataBoundConstructor
-    public RabbitConfiguration(boolean enableConsumer, String serviceUri, String credentialsId, long watchdogPeriod, List<RabbitmqConsumeItem> consumeItems, boolean enableDebug) {
+    public RabbitConfiguration(boolean enableConsumer, String serviceUri, String credentialsId, long watchdogPeriod, List<RabbitMqConsumeItem> consumeItems, boolean enableDebug) {
 
         this.serviceUri = serviceUri;
         this.enableDebug = enableDebug;
@@ -297,7 +297,7 @@ public class RabbitConfiguration extends GlobalConfiguration {
      *
      * @return the value of consumeItems.
      */
-    public List<RabbitmqConsumeItem> getConsumeItems() {
+    public List<RabbitMqConsumeItem> getConsumeItems() {
         return consumeItems;
     }
 
@@ -308,7 +308,7 @@ public class RabbitConfiguration extends GlobalConfiguration {
      *            the value to set.
      */
     @DataBoundSetter
-    public void setConsumeItems(List<RabbitmqConsumeItem> consumeItems) {
+    public void setConsumeItems(List<RabbitMqConsumeItem> consumeItems) {
         this.consumeItems = consumeItems;
         save();
     }

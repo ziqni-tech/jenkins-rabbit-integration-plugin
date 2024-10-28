@@ -7,7 +7,7 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.ShutdownSignalException;
 import com.ziqni.jenkins.plugins.rabbit.configuration.RabbitConfiguration;
 import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitState;
-import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitmqConsumeItem;
+import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitMqConsumeItem;
 import com.ziqni.jenkins.plugins.rabbit.consumer.extensions.MessageQueueListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -125,14 +125,14 @@ public class ConsumeRMQChannel extends AbstractRMQChannel {
                 Map<String, Object> headers = properties.getHeaders();
 
                 if (debug) {
-                    if (appIds.contains(RabbitmqConsumeItem.DEBUG_APPID)) {
-                        MessageQueueListener.fireOnReceive(RabbitmqConsumeItem.DEBUG_APPID,
+                    if (appIds.contains(RabbitMqConsumeItem.DEBUG_APPID)) {
+                        MessageQueueListener.fireOnReceive(RabbitMqConsumeItem.DEBUG_APPID,
                                 queueName, contentType, headers, body);
                     }
                 }
 
                 if (properties.getAppId() != null &&
-                        !properties.getAppId().equals(RabbitmqConsumeItem.DEBUG_APPID)) {
+                        !properties.getAppId().equals(RabbitMqConsumeItem.DEBUG_APPID)) {
                     if (appIds.contains(properties.getAppId())) {
                         MessageQueueListener.fireOnReceive(properties.getAppId(),
                                 queueName, contentType, headers, body);
