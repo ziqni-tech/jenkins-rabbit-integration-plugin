@@ -17,7 +17,7 @@ public class RabbitConsoleLogFilter extends ConsoleLogFilter {
 
         if (property != null && property.isEnableCollector()) {
             // Pass the routing key or any other settings from the property to your logger
-            return new RabbitLineLogger(logger, property);
+            return new RabbitLineLogger(logger, property, build);
         } else {
             // If property is not enabled or not present, return the original logger
             return logger;

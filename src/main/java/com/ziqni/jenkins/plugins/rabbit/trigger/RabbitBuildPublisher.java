@@ -44,7 +44,7 @@ public class RabbitBuildPublisher extends Notifier {
 
     public static final String HEADER_JENKINS_URL = "jenkins-url";
     public static final String JSON_CONTENT_TYPE = "application/json";
-    public static final String TEXT_CONTENT_TYPE = "application/text";
+    public static final String TEXT_CONTENT_TYPE = "text/plain";
 
     public static final String LOG_HEADER = "Publish to RabbitMQ: ";
 
