@@ -9,12 +9,12 @@
     <relativePath />
   </parent>
 
-  <groupId>io.jenkins.plugins</groupId>
-  <artifactId>jenkins-robo-rabbit-plugin</artifactId>
+  <groupId>com.ziqni.jenkins.plugins</groupId>
+  <artifactId>jenkins-rabbit-integration-plugin</artifactId>
   <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
-  <name>Robo Rabbit AMQP Jenkins Integration Plugin</name>
+  <name>Jenkins RabbitMQ Integration Plugin</name>
   <description>This plugin facilitates communication between RabbitMQ and registered listeners.
     It consumes messages from RabbitMQ and delivers them to the appropriate listeners, enabling real-time processing and response.
     Additionally, the plugin features a trigger mechanism that can initiate build processes and publish the resulting build status and outputs back to AMQP.
@@ -35,15 +35,16 @@
     <developer>
       <id>ziqni</id>
       <name>ziqni</name>
-      <email>support@gmail.com</email>
+      <email>support@ziqni.com</email>
       <timezone>+0</timezone>
+      <url>https://www.ziqni.com</url>
     </developer>
   </developers>
 
   <scm>
-    <connection>scm:git:https://github.com/jenkinsci/rabbitmq-consumer-plugin.git</connection>
-    <developerConnection>scm:git:https://github.com/jenkinsci/rabbitmq-consumer-plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/rabbitmq-consumer-plugin</url>
+    <connection>scm:git:https://github.com/ziqni-tech/jenkins-rabbit-integration-plugin.git</connection>
+    <developerConnection>scm:git:https://github.com/ziqni-tech/jenkins-rabbit-integration-plugin.git</developerConnection>
+    <url>https://github.com/ziqni-tech/jenkins-rabbit-integration-plugin</url>
     <tag>HEAD</tag>
   </scm>
 

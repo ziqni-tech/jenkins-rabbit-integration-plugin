@@ -1,0 +1,213 @@
+package com.ziqni.jenkins.plugins.rabbit.trigger;
+
+import com.rabbitmq.client.AMQP.BasicProperties;
+
+import hudson.Launcher;
+import hudson.Extension;
+import hudson.model.Result;
+import hudson.tasks.Notifier;
+import hudson.tasks.Publisher;
+import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
+import hudson.model.BuildListener;
+import hudson.tasks.BuildStepMonitor;
+import hudson.tasks.BuildStepDescriptor;
+
+import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishResult;
+import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannel;
+import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannelFactory;
+
+import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang3.StringUtils;
+import org.kohsuke.stapler.DataBoundConstructor;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.io.IOException;
+import java.util.logging.Logger;
+import java.util.concurrent.Future;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * The extension publish build result using rabbitmq.
+ *
+ * @author rinrinne a.k.a. rin_ne
+ */
+public class RabbitBuildPublisher extends Notifier {
+
+    private static final Logger LOGGER = Logger.getLogger(RabbitBuildPublisher.class.getName());
+
+    private static final String KEY_PROJECT = "project";
+    private static final String KEY_NUMBER = "number";
+    private static final String KEY_STATUS = "status";
+
+    public static final String HEADER_JENKINS_URL = "jenkins-url";
+    public static final String JSON_CONTENT_TYPE = "application/json";
+
+    public static final String LOG_HEADER = "Publish to RabbitMQ: ";
+
+    private String exchangeName;
+    private String routingKey;
+
+    /**
+     * Creates instance with specified parameters.
+     *
+     * @param exchangeName the exchange name.
+     * @param routingKey the routing key.
+     */
+    @DataBoundConstructor
+    public RabbitBuildPublisher(String exchangeName, String routingKey) {
+        this.exchangeName = exchangeName;
+        if (StringUtils.isBlank(routingKey)) {
+            this.routingKey = RabbitBuildPublisher.class.getPackage().getName();
+        } else {
+            this.routingKey = routingKey;
+        }
+    }
+
+    /**
+     * Gets exchange name.
+     *
+     * @return the exchange name.
+     */
+    public String getExchangeName() {
+        return exchangeName;
+    }
+
+    /**
+     * Sets exchange name.
+     *
+     * @param exchangeName the exchange name.
+     */
+    public void setExchangeName(String exchangeName) {
+        this.exchangeName = exchangeName;
+    }
+
+    /**
+     * Gets routingKey.
+     *
+     * @return the routingKey.
+     */
+    public String getRoutingKey() {
+        return routingKey;
+    }
+
+    /**
+     * Sets routingKey.
+     *
+     * @param routingKey the routingKey.
+     */
+    public void setRoutingKey(String routingKey) {
+        this.routingKey = routingKey;
+    }
+
+    /**
+     * Gets result as string.
+     *
+     * @param result the result.
+     * @return the result string.
+     */
+    private String getResultAsString(Result result) {
+        String retStr = "ONGOING";
+        if (result != null) {
+            retStr = result.toString();
+       }
+       return retStr;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public BuildStepMonitor getRequiredMonitorService() {
+        return BuildStepMonitor.NONE;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+            throws InterruptedException, IOException {
+
+        if (exchangeName == null || exchangeName.length() == 0) {
+            return true;
+        }
+
+        // Generate message (JSON format)
+        JSONObject json = new JSONObject();
+        json.put(KEY_PROJECT, build.getProject().getName());
+        json.put(KEY_NUMBER, build.getNumber());
+        json.put(KEY_STATUS, getResultAsString(build.getResult()));
+
+        // Basic property
+        BasicProperties.Builder builder = new BasicProperties.Builder();
+        builder.appId(RabbitBuildTrigger.PLUGIN_APPID);
+        builder.contentType(JSON_CONTENT_TYPE);
+
+        // Header
+        Map<String, Object> headers = new HashMap<String, Object>();
+        Jenkins jenkins = Jenkins.getInstance();
+        if (jenkins != null) {
+            headers.put(HEADER_JENKINS_URL, jenkins.getRootUrl());
+        }
+        builder.headers(headers);
+
+        // Publish message
+        PublishChannel ch = PublishChannelFactory.getPublishChannel();
+        if (ch != null && ch.isOpen()) {
+            // return value is not needed if you don't need to wait.
+            Future<PublishResult> future = ch.publish(exchangeName, routingKey, builder.build(),
+                                                      json.toString().getBytes(StandardCharsets.UTF_8));
+
+            // Wait until publish is completed.
+            try {
+                PublishResult result = future.get();
+
+                if (result.isSuccess()) {
+                    listener.getLogger().println(LOG_HEADER + "Success.");
+                } else {
+                    listener.getLogger().println(LOG_HEADER + "Fail - " + result.getMessage());
+                }
+            } catch (Exception e) {
+                LOGGER.warning(e.getMessage());
+                listener.getLogger().println(LOG_HEADER + "Fail due to exception.");
+            }
+        }
+        return true;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DescriptorImpl getDescriptor() {
+        return (DescriptorImpl)super.getDescriptor();
+    }
+
+    /**
+     * The descriptor for this publisher.
+     *
+     * @author rinrinne a.k.a. rin_ne
+     */
+    @Extension
+    public static final class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean isApplicable(Class<? extends AbstractProject> project) {
+            return true;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public String getDisplayName() {
+            return Messages.roboRabbitBuildPublisher();
+        }
+    }
+}
