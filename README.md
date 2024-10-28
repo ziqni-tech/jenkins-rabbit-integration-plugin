@@ -133,7 +133,7 @@ To publish build results, add the following to your job configuration:
 
 ### Custom Template for RabbitMQ Build Publisher
 
-You can customize the template by specifying your own JSON string. When creating a custom template, you can use any of the environment variables available in Jenkins to dynamically insert information. For a full list of available environment variables, refer to the Jenkins Environment Variables page.
+You can customize the template by specifying your own string. When creating a custom template, you can use any of the environment variables available in Jenkins to dynamically insert information. For a full list of available environment variables, refer to the Jenkins Environment Variables page.
 
 For example, you can define a template like this:
 

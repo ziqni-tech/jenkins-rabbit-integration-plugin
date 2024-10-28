@@ -2,6 +2,7 @@ package com.ziqni.jenkins.plugins.rabbit.trigger;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 
+import com.ziqni.jenkins.plugins.rabbit.utils.Utils;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.model.Result;
@@ -192,24 +193,14 @@ public class RabbitBuildPublisher extends Notifier {
      * @return response
      */
     private String prepareResponse(AbstractBuild<?, ?> build, Map<String, String> envVars){
-        if(this.template == null){
+        return Utils.prepareResponse(build, envVars, this.template, () -> {
             // Generate message (JSON format)
             JSONObject json = new JSONObject();
             json.put(KEY_PROJECT, build.getProject().getName());
             json.put(KEY_NUMBER, build.getNumber());
             json.put(KEY_STATUS, getResultAsString(build.getResult()));
             return json.toString();
-        }
-        else {
-
-            var customTemplate = this.template;
-
-            for (Map.Entry<String, String> entry : envVars.entrySet()) {
-                 customTemplate = this.template.replace("${" + entry.getKey() + "}", entry.getValue());
-            }
-
-            return customTemplate;
-        }
+        });
     }
 
     /**
