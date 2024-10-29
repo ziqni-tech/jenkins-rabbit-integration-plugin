@@ -10,16 +10,16 @@ import java.io.OutputStream;
 public class RabbitConsoleLogFilter extends ConsoleLogFilter {
 
     private final TaskListener listener;
-    private final RabbitConsoleCollectorJobProperty property;
+    private final RabbitConsoleBuildWrapper property;
 
-    public RabbitConsoleLogFilter(TaskListener listener, RabbitConsoleCollectorJobProperty property) {
+    public RabbitConsoleLogFilter(TaskListener listener, RabbitConsoleBuildWrapper property) {
         this.listener = listener;
         this.property = property;
     }
 
     @Override
     public OutputStream decorateLogger(Run run, OutputStream logger) throws IOException, InterruptedException {
-        return new RabbitLineLogger(logger, property, run, listener);
+        return new RabbitConsoleLineLogger(logger, property, run, listener);
     }
 
     @Override

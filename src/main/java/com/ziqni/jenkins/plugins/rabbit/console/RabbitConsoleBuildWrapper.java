@@ -14,8 +14,11 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildPublisher;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
-public class RabbitConsoleCollectorJobProperty extends SimpleBuildWrapper {
+public class RabbitConsoleBuildWrapper extends SimpleBuildWrapper {
+
+    private static final Logger LOGGER = Logger.getLogger(RabbitConsoleBuildWrapper.class.getName());
 
     private String exchangeName;
     private String template;
@@ -30,9 +33,10 @@ public class RabbitConsoleCollectorJobProperty extends SimpleBuildWrapper {
      * @param routingKey the routing key.
      */
     @DataBoundConstructor
-    public RabbitConsoleCollectorJobProperty(String exchangeName, String routingKey,
-                                             String startPublishingIfMessageContains, String stopPublishingIfMessageContains,
-                                             String template) {
+    public RabbitConsoleBuildWrapper(String exchangeName, String routingKey,
+                                     String startPublishingIfMessageContains, String stopPublishingIfMessageContains,
+                                     String template) {
+
         this.exchangeName = exchangeName;
         this.template = template;
 
@@ -57,6 +61,17 @@ public class RabbitConsoleCollectorJobProperty extends SimpleBuildWrapper {
 
     public String getExchangeName() {
         return exchangeName;
+    }
+
+
+
+    public void notifyJobCompletion(Run<?, ?> run, TaskListener listener) {
+        // Add your notification logic here (e.g., sending a message to RabbitMQ)
+        listener.getLogger().println("RabbitConsoleBuildWrapper: Job has completed.");
+        LOGGER.info("RabbitConsoleBuildWrapper: Job completed for " + run.getParent().getFullName());
+
+        // Example: Send a message to RabbitMQ (placeholder logic)
+        // RabbitMQPublisher.publish(exchangeName, routingKey, "Job completed");
     }
 
     @Override

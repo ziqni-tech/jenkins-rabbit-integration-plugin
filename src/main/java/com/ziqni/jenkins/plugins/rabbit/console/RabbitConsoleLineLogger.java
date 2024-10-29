@@ -25,11 +25,11 @@ import java.util.logging.Logger;
 import static com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildPublisher.*;
 import static com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier.HEADER_MACHINE_ID;
 
-public class RabbitLineLogger extends LineTransformationOutputStream.Delegating {
+public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Delegating {
 
-    private static final Logger LOGGER = Logger.getLogger(RabbitLineLogger.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RabbitConsoleLineLogger.class.getName());
 
-    private final RabbitConsoleCollectorJobProperty property;
+    private final RabbitConsoleBuildWrapper property;
     private final AtomicInteger counter = new AtomicInteger(0);
     private final boolean hasStopPublishingIfMessageContains;
     private final Run<?,?> run;
@@ -38,7 +38,7 @@ public class RabbitLineLogger extends LineTransformationOutputStream.Delegating 
 
     private final AtomicBoolean isPublishing = new AtomicBoolean(true);
 
-    public RabbitLineLogger(OutputStream logger, RabbitConsoleCollectorJobProperty property, Run<?,?> run, TaskListener listener) throws IOException, InterruptedException {
+    public RabbitConsoleLineLogger(OutputStream logger, RabbitConsoleBuildWrapper property, Run<?,?> run, TaskListener listener) throws IOException, InterruptedException {
         super(logger); // Pass the underlying output stream to the superclass
         this.property = property;
         this.run = run;
