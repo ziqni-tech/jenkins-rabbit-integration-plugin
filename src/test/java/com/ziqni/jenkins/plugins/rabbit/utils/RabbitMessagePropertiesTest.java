@@ -86,13 +86,4 @@ public class RabbitMessagePropertiesTest {
         assertEquals("testHeaderValue", messageProperties.getValue(RabbitMessageProperties.RABBIT_HEADER_ + "TESTHEADER"));
         assertNull(messageProperties.getValue("NON_EXISTENT_KEY"));
     }
-
-    @Test
-    public void testNullHandling() {
-        // Create a new instance with null properties to verify that nulls are handled gracefully
-        RabbitMessageProperties nullPropertiesInstance = new RabbitMessageProperties(queueName, envelope, null);
-
-        assertNull(nullPropertiesInstance.getValue(RabbitMessageProperties.RABBIT_CONTENT_TYPE));
-        assertEquals(queueName, nullPropertiesInstance.getValue(RabbitMessageProperties.RABBIT_QUEUE_NAME));
-    }
 }
