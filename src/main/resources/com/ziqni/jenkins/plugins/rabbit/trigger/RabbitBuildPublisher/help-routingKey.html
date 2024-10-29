@@ -4,4 +4,9 @@
   <p>You can specify the routing key for publishing the message.</p>
 
   <p>If left empty, the message will be published with the default routing key.</p>
+
+  <p>
+    You can use environment variables by specifying your own routing key like <strong>some-test/${RABBIT_REPLY_TO}</strong><br>
+    For a full list of available environment variables, refer to the <a href="http://jenkins.bronzegate.local:8080/env-vars.html" target="_blank">Jenkins Environment Variables</a> page.
+  </p>
 </div>
