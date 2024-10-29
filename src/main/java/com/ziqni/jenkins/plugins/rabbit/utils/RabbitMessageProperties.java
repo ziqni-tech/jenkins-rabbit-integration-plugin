@@ -17,7 +17,6 @@ public class RabbitMessageProperties {
 
     private final String queueName;
     private final String appId;
-    private final AMQP.BasicProperties properties;
 
     public static final String RABBIT_QUEUE_NAME = "RABBIT_QUEUE_NAME";
     public static final String RABBIT_EXCHANGE = "RABBIT_EXCHANGE";
@@ -39,17 +38,19 @@ public class RabbitMessageProperties {
     public static final String RABBIT_USER_ID = "RABBIT_USER_ID";
     public static final String RABBIT_APP_ID = "RABBIT_APP_ID";
     public static final String RABBIT_CLUSTER_ID = "RABBIT_CLUSTER_ID";
+    private final Map<String, Object> headers;
 
     public RabbitMessageProperties(String appId, String queueName, Envelope envelope, AMQP.BasicProperties properties) {
+        Objects.requireNonNull(properties, "Properties cannot be null");
         Objects.requireNonNull(envelope, "Envelope cannot be null");
 
         this.appId = appId;
-        this.properties = Objects.requireNonNull(properties, "Properties cannot be null");
         this.queueName = Objects.requireNonNull(queueName, "Queue name cannot be null");
         this.vars = new HashMap<>();
+        this.headers = properties.getHeaders();
 
         // Initialize the vars map with values from properties and envelope
-        populateVars(envelope);
+        populateVars(envelope,properties);
     }
 
 
@@ -57,7 +58,7 @@ public class RabbitMessageProperties {
         this(properties.getAppId(), queueName, envelope, properties);
     }
 
-    private void populateVars(Envelope envelope) {
+    private void populateVars(Envelope envelope, AMQP.BasicProperties properties) {
         // Add values from BasicProperties to the vars map
         putIfNotNull(RABBIT_APP_ID, this.appId);
 
@@ -112,17 +113,13 @@ public class RabbitMessageProperties {
         return queueName;
     }
 
-    public AMQP.BasicProperties getProperties() {
-        return properties;
-    }
-
     public String getValue(String key) {
         // Return the value directly from the vars map if available
         return vars.get(key.toUpperCase());
     }
 
     public Map<String, Object> getHeaders() {
-        return properties.getHeaders();
+        return this.headers;
     }
 
     public static RabbitMessageProperties get(Run<?,?> run) {

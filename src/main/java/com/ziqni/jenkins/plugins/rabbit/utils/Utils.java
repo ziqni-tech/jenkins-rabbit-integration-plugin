@@ -14,8 +14,8 @@ public abstract class Utils {
      * @param template template
      * @return response
      */
-    public static String injectEnvVars(Run<?, ?> run, Map<String, String> envVars, String template) {
-        return injectEnvVars(run, envVars, template, () -> template);
+    public static String injectEnvVars(Map<String, String> envVars, String template) {
+        return injectEnvVars(envVars, template, () -> template);
     }
 
     /**
@@ -26,7 +26,7 @@ public abstract class Utils {
      * @param orElse Result is the template is null or empty
      * @return response
      */
-    public static String injectEnvVars(Run<?, ?> run, Map<String, String> envVars, final String template, Supplier<String> orElse) {
+    public static String injectEnvVars(Map<String, String> envVars, final String template, Supplier<String> orElse) {
 
         if(template == null || template.trim().isEmpty() || !template.contains("$")) {
             return orElse.get();
@@ -39,7 +39,7 @@ public abstract class Utils {
                 customTemplate = customTemplate.replace("${" + entry.getKey() + "}", entry.getValue());
             }
 
-            return customTemplate;
+            return customTemplate.trim();
         }
     }
 }

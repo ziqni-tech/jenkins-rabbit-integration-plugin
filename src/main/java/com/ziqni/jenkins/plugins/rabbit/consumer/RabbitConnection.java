@@ -145,7 +145,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
      * @return the collection of ComsumeRMQChannels.
      */
     public Collection<ConsumeRMQChannel> getConsumeRMQChannels() {
-        Collection<ConsumeRMQChannel> channels = new HashSet<ConsumeRMQChannel>();
+        Collection<ConsumeRMQChannel> channels = new HashSet<>();
         for (AbstractRMQChannel ch : rmqChannels) {
             if (ch instanceof ConsumeRMQChannel) {
                 channels.add((ConsumeRMQChannel) ch);
@@ -160,7 +160,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
      * @return the list of PublishRMQChannels.
      */
     public Collection<PublishRMQChannel> getPublishRMQChannels() {
-        Collection<PublishRMQChannel> channels = new HashSet<PublishRMQChannel>();
+        Collection<PublishRMQChannel> channels = new HashSet<>();
         for (AbstractRMQChannel ch : rmqChannels) {
             if (ch instanceof PublishRMQChannel) {
                 channels.add((PublishRMQChannel) ch);
@@ -459,7 +459,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
     public void onCloseCompleted(AbstractRMQChannel rmqChannel) {
         if (rmqChannels.contains(rmqChannel)) {
             rmqChannel.removeRMQChannelListener(this);
-            rmqChannels.remove(rmqChannel);
+            //rmqChannels.remove(rmqChannel);
             try {
                 if (rmqChannel instanceof ConsumeRMQChannel) {
                     ConsumeRMQChannel consumeChannel = (ConsumeRMQChannel) rmqChannel;

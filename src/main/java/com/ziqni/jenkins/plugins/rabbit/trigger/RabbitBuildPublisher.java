@@ -162,15 +162,17 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
+
+        // Get environment variables from the build
+        Map<String, String> envVars = build.getEnvironment(listener);
+        envVars.put("BUILD_STATUS",getResultAsString(build.getResult()));
+
         // Retrieve the RabbitBuildCause from the build
         RabbitMessageProperties messageProperties = RabbitMessageProperties.get(build);
 
         if (exchangeName == null || exchangeName.isEmpty()) {
             return true;
         }
-
-        // Get environment variables from the build
-        Map<String, String> envVars = build.getEnvironment(listener);
 
         // Header
         Map<String, Object> headers = new HashMap<>();
@@ -195,12 +197,11 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
         PublishChannel ch = PublishChannelFactory.getPublishChannel();
         if (ch != null && ch.isOpen()) {
             // return value is not needed if you don't need to wait.
-            envVars.put("BUILD_STATUS",getResultAsString(build.getResult()));
             String response = prepareResponse(build, envVars);
 
             Future<PublishResult> future = ch.publish(
                     exchangeName,
-                    Utils.injectEnvVars(build, envVars, routingKey),
+                    Utils.injectEnvVars(envVars, routingKey),
                     builder.build(),
                     response.getBytes(StandardCharsets.UTF_8)
             );
@@ -229,7 +230,7 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
      * @return response
      */
     private String prepareResponse(AbstractBuild<?, ?> build, Map<String, String> envVars){
-        return Utils.injectEnvVars(build, envVars, this.template, () -> {
+        return Utils.injectEnvVars(envVars, this.template, () -> {
             // Generate message (JSON format)
             JSONObject json = new JSONObject();
             json.put(KEY_PROJECT, build.getProject().getName());
