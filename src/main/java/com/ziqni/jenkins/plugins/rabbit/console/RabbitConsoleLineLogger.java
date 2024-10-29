@@ -15,7 +15,6 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -81,7 +80,7 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
             if (isPublishing.get()) {
                 String formattedLine = line;
                 if (hasTemplate) {
-                    String tmp = Utils.injectEnvVars(envVars, property.getTemplate());
+                    String tmp = Utils.injectEnvVars(run, envVars, property.getTemplate());
 
                     if (tmp.contains("\"${BUILD_CONSOLE_LINE}\"")) {
                         tmp = tmp.replace("\"${BUILD_CONSOLE_LINE}\"", line.replace("\"", "\\\""));
@@ -90,7 +89,7 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
                     }
                     formattedLine = tmp.replace("${BUILD_CONSOLE_LINE_NUMBER}", String.valueOf(lineNumber));
                 }
-                publish(formattedLine);
+                publish(run, formattedLine);
             }
 
             // Pass the original line to the underlying logger
@@ -109,7 +108,7 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
     }
 
 
-    protected void publish(String line){
+    protected void publish(Run<?, ?> run, String line){
 
         if(!isPublishing.get())
             return;
@@ -119,16 +118,16 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
         // Add a header with the line number
         headers.put("line-number", counter.get());
         // Add a header with the job name
-        headers.put("job-name", run.getNumber());
+        headers.put("job-name", this.run.getNumber());
         // Add a header with the display name of the run
-        headers.put("display-name", run.getDisplayName());
+        headers.put("display-name", this.run.getDisplayName());
         // Add a header to stop the message from being displayed in the console
         headers.put("stop-message-console", isPublishing.get() ? "false" : "true");
         // Add a header with the display name of the run
         headers.put(HEADER_MACHINE_ID, MachineIdentifier.getUniqueMachineId());
 
         // Basic property
-        AMQP.BasicProperties.Builder builder = RabbitMessageBuilder.build(new AMQP.BasicProperties.Builder(), this.property, headers);
+        AMQP.BasicProperties.Builder builder = RabbitMessageBuilder.build(new AMQP.BasicProperties.Builder(), this.property, headers, in -> Utils.injectEnvVars(run, envVars, in) );
 
         builder.appId(RabbitBuildTrigger.PLUGIN_APPID);
         builder.contentType(TEXT_CONTENT_TYPE);
@@ -139,7 +138,7 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
             // return value is not needed if you don't need to wait.
             Future<PublishResult> future = ch.publish(
                     this.property.getExchangeName(),
-                    Utils.injectEnvVars(envVars, this.property.getRoutingKey()),
+                    Utils.injectEnvVars(run, envVars, this.property.getRoutingKey()),
                     builder.build(),
                     line.getBytes(StandardCharsets.UTF_8)
             );

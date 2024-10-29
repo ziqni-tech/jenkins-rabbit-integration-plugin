@@ -30,6 +30,10 @@ The RabbitMQ Consumer and Build Trigger Plugin was developed to provide a compre
 By including all the main build features, this plugin simplifies the process of setting up RabbitMQ with Jenkins, making it a convenient, one-step installation for users. 
 It utilizes the latest libraries and the new Jenkins architecture to ensure seamless integration and improved performance, providing a modern, streamlined experience.
 
+Better templating for everyone, and more freedom to match user needs.
+
+<img alt="templates-for-everyone.png" height="400" src="images/templates-for-everyone.png" width="400"/>
+
 Features
 ------------------------
 * Consumes application messages from specific queues

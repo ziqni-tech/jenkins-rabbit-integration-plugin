@@ -177,7 +177,7 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
         headers.put(HEADER_MACHINE_ID, MachineIdentifier.getUniqueMachineId());
 
         // Basic property
-        BasicProperties.Builder builder = RabbitMessageBuilder.build(new BasicProperties.Builder(), this, headers);
+        BasicProperties.Builder builder = RabbitMessageBuilder.build(new BasicProperties.Builder(), this, headers, in -> Utils.injectEnvVars(build,envVars, in) );
 
         builder.appId(RabbitBuildTrigger.PLUGIN_APPID);
 
@@ -189,7 +189,7 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
         PublishChannel ch = PublishChannelFactory.getPublishChannel();
         if (ch != null && ch.isOpen()) {
             // return value is not needed if you don't need to wait.
-            String routingKeyReady = Utils.injectEnvVars(envVars, routingKey);
+            String routingKeyReady = Utils.injectEnvVars(build, envVars, routingKey);
             String response = prepareResponse(build, envVars);
 
             Future<PublishResult> future = ch.publish(
@@ -223,7 +223,7 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
      * @return response
      */
     private String prepareResponse(AbstractBuild<?, ?> build, Map<String, String> envVars){
-        return Utils.injectEnvVars(envVars, this.template, () -> {
+        return Utils.injectEnvVars(build, envVars, this.template, () -> {
             // Generate message (JSON format)
             JSONObject json = new JSONObject();
             json.put(KEY_PROJECT, build.getProject().getName());
