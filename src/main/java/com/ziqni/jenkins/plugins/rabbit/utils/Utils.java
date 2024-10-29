@@ -1,6 +1,6 @@
 package com.ziqni.jenkins.plugins.rabbit.utils;
 
-import hudson.model.Run;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -15,12 +15,12 @@ public abstract class Utils {
      * @return response
      */
     public static String injectEnvVars(Map<String, String> envVars, String template) {
-        return injectEnvVars(envVars, template, () -> template);
+        return injectEnvVars(envVars, template, () -> "");
     }
 
     /**
      * Prepare response.
-     * @param run run
+     *
      * @param envVars environment variables
      * @param template template
      * @param orElse Result is the template is null or empty
@@ -28,18 +28,14 @@ public abstract class Utils {
      */
     public static String injectEnvVars(Map<String, String> envVars, final String template, Supplier<String> orElse) {
 
-        if(template == null || template.trim().isEmpty() || !template.contains("$")) {
-            return orElse.get();
+        final var decorateTemplate = StringUtils.isBlank(template) ? orElse.get() : template;
+
+        String out = new String(decorateTemplate);
+
+        for (Map.Entry<String, String> entry : envVars.entrySet()) {
+            out = out.replace("${" + entry.getKey() + "}", entry.getValue());
         }
-        else {
 
-            var customTemplate = template;
-
-            for (Map.Entry<String, String> entry : envVars.entrySet()) {
-                customTemplate = customTemplate.replace("${" + entry.getKey() + "}", entry.getValue());
-            }
-
-            return customTemplate.trim();
-        }
+        return out.trim();
     }
 }

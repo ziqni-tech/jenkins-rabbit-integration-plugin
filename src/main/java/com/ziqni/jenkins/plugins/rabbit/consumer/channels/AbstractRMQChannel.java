@@ -169,7 +169,7 @@ public abstract class AbstractRMQChannel implements RMQChannelNotifier, Shutdown
      */
     public void shutdownCompleted(ShutdownSignalException shutdownSignalException) {
         if (shutdownSignalException != null && !shutdownSignalException.isInitiatedByApplication()) {
-            LOGGER.warn("RabbitMQ channel {} was suddenly closed.", channel.getChannelNumber());
+            LOGGER.error("RabbitMQ channel {} was suddenly closed.", channel.getChannelNumber(), shutdownSignalException);
         }
         state = RabbitState.DISCONNECTED;
         notifyOnCloseCompleted();

@@ -459,7 +459,7 @@ public class RabbitConnection implements ShutdownListener, RMQChannelListener, R
     public void onCloseCompleted(AbstractRMQChannel rmqChannel) {
         if (rmqChannels.contains(rmqChannel)) {
             rmqChannel.removeRMQChannelListener(this);
-            //rmqChannels.remove(rmqChannel);
+            rmqChannels.remove(rmqChannel);
             try {
                 if (rmqChannel instanceof ConsumeRMQChannel) {
                     ConsumeRMQChannel consumeChannel = (ConsumeRMQChannel) rmqChannel;

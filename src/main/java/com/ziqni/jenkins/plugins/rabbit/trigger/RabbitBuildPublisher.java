@@ -162,13 +162,9 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
 
-
         // Get environment variables from the build
         Map<String, String> envVars = build.getEnvironment(listener);
         envVars.put("BUILD_STATUS",getResultAsString(build.getResult()));
-
-        // Retrieve the RabbitBuildCause from the build
-        RabbitMessageProperties messageProperties = RabbitMessageProperties.get(build);
 
         if (exchangeName == null || exchangeName.isEmpty()) {
             return true;
@@ -185,23 +181,20 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
 
         builder.appId(RabbitBuildTrigger.PLUGIN_APPID);
 
-        if(Objects.nonNull(this.template)) {
+        if(StringUtils.isBlank(this.template)) {
             builder.contentType(JSON_CONTENT_TYPE);
-        }
-
-        if(Objects.nonNull(this.contentType)) {
-            builder.contentType(this.contentType);
         }
 
         // Publish message
         PublishChannel ch = PublishChannelFactory.getPublishChannel();
         if (ch != null && ch.isOpen()) {
             // return value is not needed if you don't need to wait.
+            String routingKeyReady = Utils.injectEnvVars(envVars, routingKey);
             String response = prepareResponse(build, envVars);
 
             Future<PublishResult> future = ch.publish(
                     exchangeName,
-                    Utils.injectEnvVars(envVars, routingKey),
+                    routingKeyReady,
                     builder.build(),
                     response.getBytes(StandardCharsets.UTF_8)
             );

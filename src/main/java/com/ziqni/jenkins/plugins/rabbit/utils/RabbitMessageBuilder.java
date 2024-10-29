@@ -1,6 +1,7 @@
 package com.ziqni.jenkins.plugins.rabbit.utils;
 
 import com.rabbitmq.client.AMQP;
+import org.apache.commons.lang3.StringUtils;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -14,11 +15,11 @@ import java.util.logging.Logger;
  */
 public abstract class RabbitMessageBuilder {
 
-    public static AMQP.BasicProperties.Builder build(AMQP.BasicProperties.Builder builder, RabbitMessageBuilderAccessors accessors, Map<String,Object> headersMap){
-        if (Objects.nonNull(accessors.getContentType())) {
+    public static AMQP.BasicProperties.Builder build(AMQP.BasicProperties.Builder builder, RabbitMessageBuilderAccessors accessors, Map<String,Object> headersMap) {
+        if (StringUtils.isNotBlank(accessors.getContentType())) {
             builder.contentType(accessors.getContentType());
         }
-        if (Objects.nonNull(accessors.getContentEncoding())) {
+        if (StringUtils.isNotBlank(accessors.getContentEncoding())) {
             builder.contentEncoding(accessors.getContentEncoding());
         }
         if (Objects.nonNull(accessors.getDeliveryMode())) {
@@ -27,49 +28,47 @@ public abstract class RabbitMessageBuilder {
         if (Objects.nonNull(accessors.getPriority())) {
             builder.priority(accessors.getPriority());
         }
-        if (Objects.nonNull(accessors.getCorrelationId())) {
+        if (StringUtils.isNotBlank(accessors.getCorrelationId())) {
             builder.correlationId(accessors.getCorrelationId());
         }
-        if (Objects.nonNull(accessors.getReplyTo())) {
+        if (StringUtils.isNotBlank(accessors.getReplyTo())) {
             builder.replyTo(accessors.getReplyTo());
         }
-        if (Objects.nonNull(accessors.getExpiration())) {
+        if (StringUtils.isNotBlank(accessors.getExpiration())) {
             builder.expiration(accessors.getExpiration());
         }
-        if (Objects.nonNull(accessors.getMessageId())) {
+        if (StringUtils.isNotBlank(accessors.getMessageId())) {
             builder.messageId(accessors.getMessageId());
         }
-        if (Objects.nonNull(accessors.getTimestamp()) && !accessors.getTimestamp().isEmpty()) {
+        if (StringUtils.isNotBlank(accessors.getTimestamp())) {
             try {
                 builder.timestamp(DateFormat.getDateInstance().parse(accessors.getTimestamp()));
             } catch (ParseException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Invalid timestamp format", e);
             }
         }
-        if (Objects.nonNull(accessors.getType())) {
+        if (StringUtils.isNotBlank(accessors.getType())) {
             builder.type(accessors.getType());
         }
-        if (Objects.nonNull(accessors.getUserId())) {
+        if (StringUtils.isNotBlank(accessors.getUserId())) {
             builder.userId(accessors.getUserId());
         }
-        if (Objects.nonNull(accessors.getAppId())) {
+        if (StringUtils.isNotBlank(accessors.getAppId())) {
             builder.appId(accessors.getAppId());
         }
-        if (Objects.nonNull(accessors.getClusterId())) {
+        if (StringUtils.isNotBlank(accessors.getClusterId())) {
             builder.clusterId(accessors.getClusterId());
         }
 
         // Add headers if present
-        if (Objects.nonNull(accessors.getHeaders())) {
+        if (StringUtils.isNotBlank(accessors.getHeaders())) {
             builder.headers(parseHeaders(accessors.getHeaders(), headersMap));
-        }
-        else if (Objects.nonNull(headersMap)) {
+        } else if (Objects.nonNull(headersMap)) {
             builder.headers(headersMap);
         }
 
         return builder;
     }
-
 
     // Method to parse headers from a JSON string or key=value format to a Map<String, Object>
     public static Map<String, Object> parseHeaders(String headers, Map<String,Object> headersMap) {
@@ -80,7 +79,7 @@ public abstract class RabbitMessageBuilder {
                 String[] pairs = headers.split(",");
                 for (String pair : pairs) {
                     String[] keyValue = pair.split("=");
-                    if (keyValue.length == 2) {
+                    if (keyValue.length == 2 && StringUtils.isNotBlank(keyValue[0]) && StringUtils.isNotBlank(keyValue[1])) {
                         headersMap.put(keyValue[0].trim(), keyValue[1].trim());
                     }
                 }
