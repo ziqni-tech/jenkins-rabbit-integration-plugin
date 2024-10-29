@@ -27,7 +27,7 @@ public class RabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.Para
 
     public static final String PLUGIN_APPID = "robo-rabbit-remote-build";
 
-    private static final String PLUGIN_NAME = Messages.rabbitMQBuildTrigger();
+    private static final String PLUGIN_NAME = Messages.rabbitBuildTrigger();
 
     private static final String KEY_PARAM_NAME = "name";
     private static final String KEY_PARAM_VALUE = "value";
@@ -114,8 +114,7 @@ public class RabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.Para
     /**
      * Schedules build for triggered job using application message.
      *
-     * @param queueName
-     *            the queue name.
+     * @param props the properties of application message.
      * @param jsonArray
      *            the content of application message.
      */

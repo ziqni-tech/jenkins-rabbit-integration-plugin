@@ -21,9 +21,56 @@
         <f:entry title="Stop publishing if the console message contains (Optional)" field="stopPublishingIfMessageContains" class="conditional-field">
             <f:textbox/>
         </f:entry>
-        <f:entry title="${%Custom template (Optional)}" field="template" class="conditional-field">
-            <f:textarea />
-        </f:entry>
+
+
+        <!-- Advanced section with show/hide functionality -->
+        <f:advanced>
+            <f:entry title="${%Custom template (Optional)}" field="template">
+                <f:textarea />
+            </f:entry>
+            <f:entry title="${%Content Type}" field="contentType">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Content Encoding}" field="contentEncoding">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Headers}" field="headers">
+                <f:textarea />
+            </f:entry>
+            <f:entry title="${%Delivery Mode}" field="deliveryMode">
+                <f:number />
+            </f:entry>
+            <f:entry title="${%Priority}" field="priority">
+                <f:number />
+            </f:entry>
+            <f:entry title="${%Correlation ID}" field="correlationId">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Reply To}" field="replyTo">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Expiration}" field="expiration">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Message ID}" field="messageId">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Timestamp}" field="timestamp">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Type}" field="type">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%User ID}" field="userId">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%App ID}" field="appId">
+                <f:textbox />
+            </f:entry>
+            <f:entry title="${%Cluster ID}" field="clusterId">
+                <f:textbox />
+            </f:entry>
+        </f:advanced>
     </f:block>
 
 
