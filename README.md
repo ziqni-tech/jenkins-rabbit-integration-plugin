@@ -32,7 +32,7 @@ It utilizes the latest libraries and the new Jenkins architecture to ensure seam
 
 Better templating for everyone, and more freedom to match user needs.
 
-<img alt="templates-for-everyone.png" height="400" src="images/templates-for-everyone.png" width="400"/>
+<img alt="templates-for-everyone.png" height="600" src="images/templates-for-everyone.png" width="600"/>
 
 Features
 ------------------------
