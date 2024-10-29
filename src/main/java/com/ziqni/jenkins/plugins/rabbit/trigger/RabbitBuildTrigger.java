@@ -126,9 +126,9 @@ public class RabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.Para
 
             if (jsonArray != null) {
                 List<ParameterValue> parameters = getUpdatedParameters(jsonArray, getDefinitionParameters(job));
-                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new ParametersAction(parameters));
+                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new ParametersAction(parameters), new EnvironmentVariablesAction(props));
             } else {
-                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause));
+                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new EnvironmentVariablesAction(props));
             }
         }
     }

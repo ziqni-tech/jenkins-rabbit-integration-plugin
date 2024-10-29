@@ -3,6 +3,7 @@ package com.ziqni.jenkins.plugins.rabbit.utils;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Envelope;
 import com.ziqni.jenkins.plugins.rabbit.trigger.RabbitBuildCause;
+import hudson.EnvVars;
 import hudson.model.Run;
 
 import java.util.Map;
@@ -136,5 +137,9 @@ public class RabbitMessageProperties {
         else {
             return new RabbitMessageProperties("unknown", new Envelope(1, false, "unknown", "unknown"), new AMQP.BasicProperties());
         }
+    }
+
+    public void addAll(EnvVars env) {
+        env.putAll(vars);
     }
 }
