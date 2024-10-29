@@ -1,6 +1,7 @@
 package com.ziqni.jenkins.plugins.rabbit.trigger;
 
 import com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier;
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
 import hudson.Extension;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONException;
@@ -89,12 +90,12 @@ public class RabbitBuildListener extends MessageQueueListener {
      * build.
      */
     @Override
-    public void onReceive(String queueName, String contentType, Map<String, Object> headers, byte[] body) {
+    public void onReceive(RabbitMessageProperties props, byte[] body) {
 
         String msg = new String(body, StandardCharsets.UTF_8).trim();
 
-        if(headers.containsKey(HEADER_MACHINE_ID) && headers.get(HEADER_MACHINE_ID).toString().equals(MachineIdentifier.getUniqueMachineId())){
-            LOGGER.log(Level.WARNING, "This is a recursive call from within the system. Blocking for all projects, caused by {0}", headers.get(HEADER_MACHINE_ID));
+        if(props.getHeaders().containsKey(HEADER_MACHINE_ID) && props.getHeaders().get(HEADER_MACHINE_ID).toString().equals(MachineIdentifier.getUniqueMachineId())){
+            LOGGER.log(Level.WARNING, "This is a recursive call from within the system. Blocking for all projects, caused by {0}", props.getHeaders().get(HEADER_MACHINE_ID));
             return;
         }
 
@@ -112,9 +113,9 @@ public class RabbitBuildListener extends MessageQueueListener {
 
                 if (rabbitBuildTrigger.getProjectName().equals(json.getString(KEY_PROJECT))) {
                     if (json.containsKey(KEY_PARAMETER)) {
-                        rabbitBuildTrigger.scheduleBuild(queueName, json.getJSONArray(KEY_PARAMETER));
+                        rabbitBuildTrigger.scheduleBuild(props, json.getJSONArray(KEY_PARAMETER));
                     } else {
-                        rabbitBuildTrigger.scheduleBuild(queueName, null);
+                        rabbitBuildTrigger.scheduleBuild(props, null);
                     }
                 }
             }

@@ -9,6 +9,7 @@ import com.ziqni.jenkins.plugins.rabbit.configuration.RabbitConfiguration;
 import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitState;
 import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitMqConsumeItem;
 import com.ziqni.jenkins.plugins.rabbit.consumer.extensions.MessageQueueListener;
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,25 +122,21 @@ public class ConsumeRMQChannel extends AbstractRMQChannel {
             try {
 
                 long deliveryTag = envelope.getDeliveryTag();
-                String contentType = properties.getContentType();
-                Map<String, Object> headers = properties.getHeaders();
 
                 if (debug) {
                     if (appIds.contains(RabbitMqConsumeItem.DEBUG_APPID)) {
-                        MessageQueueListener.fireOnReceive(RabbitMqConsumeItem.DEBUG_APPID,
-                                queueName, contentType, headers, body);
+                        MessageQueueListener.fireOnReceive(new RabbitMessageProperties(queueName, envelope, properties), body);
                     }
                 }
 
                 if (properties.getAppId() != null && !properties.getAppId().equals(RabbitMqConsumeItem.DEBUG_APPID)) {
                     if (appIds.contains(properties.getAppId())) {
-                        MessageQueueListener.fireOnReceive(properties.getAppId(),
-                                queueName, contentType, headers, body);
+                        MessageQueueListener.fireOnReceive(new RabbitMessageProperties(queueName, envelope, properties), body);
                     }
                 }
                 else if(!appIds.isEmpty()){
                     appIds.forEach(appId ->
-                            MessageQueueListener.fireOnReceive(appId, queueName, contentType, headers, body)
+                            MessageQueueListener.fireOnReceive(new RabbitMessageProperties(appId, queueName, envelope, properties), body)
                     );
                 }
 

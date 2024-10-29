@@ -1,5 +1,6 @@
 package com.ziqni.jenkins.plugins.rabbit.trigger;
 
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
 import hudson.model.Cause;
 import org.kohsuke.stapler.export.Exported;
 
@@ -10,22 +11,28 @@ import org.kohsuke.stapler.export.Exported;
  */
 public class RabbitBuildCause extends Cause {
 
-    private final String queueName;
+    private final RabbitMessageProperties rabbitMessageProperties;
 
     /**
      * Creates instance with specified parameter.
      *
-     * @param queueName
-     *            the queue name.
+     * @param rabbitMessageProperties the message properties.
      */
-    public RabbitBuildCause(String queueName) {
-        this.queueName = queueName;
+    public RabbitBuildCause(RabbitMessageProperties rabbitMessageProperties) {
+        this.rabbitMessageProperties = rabbitMessageProperties;
     }
 
     @Override
     @Exported(visibility = 3)
     public String getShortDescription() {
-        return "Triggered by remote build message from RabbitMQ queue: " + queueName;
+        return "Triggered by remote build message from RabbitMQ queue: " + rabbitMessageProperties.getQueueName();
     }
 
+    /**
+     * Gets the RabbitMessageProperties associated with this cause.
+     * @return the RabbitMessageProperties
+     */
+    public RabbitMessageProperties getRabbitMessageProperties() {
+        return rabbitMessageProperties;
+    }
 }

@@ -1,5 +1,6 @@
 package com.ziqni.jenkins.plugins.rabbit.trigger;
 
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.*;
@@ -118,14 +119,17 @@ public class RabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.Para
      * @param jsonArray
      *            the content of application message.
      */
-    public void scheduleBuild(String queueName, JSONArray jsonArray) {
+    public void scheduleBuild(RabbitMessageProperties props, JSONArray jsonArray) {
         if (job != null) {
-          if (jsonArray != null) {
-              List<ParameterValue> parameters = getUpdatedParameters(jsonArray, getDefinitionParameters(job));
-              ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new RabbitBuildCause(queueName)), new ParametersAction(parameters));
-          } else {
-              ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(new RabbitBuildCause(queueName)));
-          }
+
+            final var cause = new RabbitBuildCause(props);
+
+            if (jsonArray != null) {
+                List<ParameterValue> parameters = getUpdatedParameters(jsonArray, getDefinitionParameters(job));
+                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new ParametersAction(parameters));
+            } else {
+                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause));
+            }
         }
     }
 

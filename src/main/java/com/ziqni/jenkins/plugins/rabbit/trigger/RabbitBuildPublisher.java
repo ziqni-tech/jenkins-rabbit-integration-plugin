@@ -3,6 +3,7 @@ package com.ziqni.jenkins.plugins.rabbit.trigger;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
 import com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier;
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
 import com.ziqni.jenkins.plugins.rabbit.utils.Utils;
 import hudson.Launcher;
 import hudson.Extension;
@@ -161,6 +162,9 @@ public class RabbitBuildPublisher extends Notifier {
     @Override
     public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
             throws InterruptedException, IOException {
+
+        // Retrieve the RabbitBuildCause from the build
+        RabbitMessageProperties messageProperties = RabbitMessageProperties.get(build);
 
         if (exchangeName == null || exchangeName.isEmpty()) {
             return true;

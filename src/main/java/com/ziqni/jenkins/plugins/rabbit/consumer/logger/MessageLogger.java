@@ -1,5 +1,6 @@
 package com.ziqni.jenkins.plugins.rabbit.consumer.logger;
 
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
 import hudson.Extension;
 import com.ziqni.jenkins.plugins.rabbit.consumer.RabbitMqConsumeItem;
 import com.ziqni.jenkins.plugins.rabbit.consumer.extensions.MessageQueueListener;
@@ -57,25 +58,14 @@ public class MessageLogger extends MessageQueueListener {
         LOGGER.info("Unbind from " + queueName);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param queueName
-     *            the queue name that receive from.
-     * @param contentType
-     *            the type of content.
-     * @param headers
-     *            the map of message headers.
-     * @param body
-     *            the content body.
-     */
-    public void onReceive(String queueName, String contentType, Map<String, Object> headers, byte[] body) {
+    @Override
+    public void onReceive(RabbitMessageProperties ops, byte[] body) {
         String msg;
         try {
             msg = new String(body, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             msg = "<Unsupported Encoding>";
         }
-        LOGGER.info("Receive: ({}) {}", contentType, msg);
+        LOGGER.info("Receive: ({}) {}", ops.getProperties().getContentType(), msg);
     }
 }

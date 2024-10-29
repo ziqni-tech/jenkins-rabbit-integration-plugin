@@ -1,3 +1,4 @@
+<div>
 <h1>RabbitMQ Build Publisher</h1>
 <p>
     This feature publishes build results to an AMQP exchange, allowing you to send build status updates and logs to external systems via RabbitMQ.
@@ -32,3 +33,42 @@ The following are the possible values for the <code>status</code> field:
 <p>
     The publisher provides a way to share build outcomes with other services or trigger subsequent tasks in your CI/CD pipeline.
 </p>
+
+
+
+<h2>RabbitMQ Message Properties</h2>
+<p>This section describes the properties that are extracted and made available by the <code>RabbitMessageProperties</code> class. These properties correspond to various metadata fields related to messages received from a RabbitMQ queue.</p>
+
+<h3>Basic RabbitMQ Message Properties</h3>
+<ul>
+    <li><strong>${RABBIT_QUEUE_NAME}:</strong> The name of the queue from which the message was received.</li>
+    <li><strong>${RABBIT_EXCHANGE}:</strong> The name of the exchange through which the message was routed.</li>
+    <li><strong>${RABBIT_ROUTING_KEY}:</strong> The routing key used to deliver the message.</li>
+    <li><strong>${RABBIT_DELIVERY_TAG}:</strong> A unique identifier for the message delivery.</li>
+    <li><strong>${RABBIT_REDELIVERED}:</strong> A flag indicating whether the message has been redelivered.</li>
+</ul>
+
+<h3>Content and Header Properties</h3>
+<ul>
+    <li><strong>${RABBIT_CONTENT_TYPE}:</strong> The content type of the message payload (e.g., <code>text/plain</code>, <code>application/json</code>).</li>
+    <li><strong>${RABBIT_CONTENT_ENCODING}:</strong> The encoding type used for the message content (e.g., <code>UTF-8</code>).</li>
+    <li><strong>${RABBIT_HEADER_}:</strong> A prefix for all custom headers included with the message. The specific header names are appended to this prefix.</li>
+</ul>
+
+<h3>Delivery and Metadata Properties</h3>
+<ul>
+    <li><strong>${RABBIT_DELIVERY_MODE}:</strong> The delivery mode of the message, indicating whether it is persistent (2) or non-persistent (1).</li>
+    <li><strong>${RABBIT_PRIORITY}:</strong> The priority level of the message.</li>
+    <li><strong>${RABBIT_CORRELATION_ID}:</strong> An ID used to correlate this message with another message (typically used in RPC-style communication).</li>
+    <li><strong>${RABBIT_REPLY_TO}:</strong> An address to which a response can be sent if required.</li>
+    <li><strong>${RABBIT_EXPIRATION}:</strong> The expiration time of the message (in milliseconds).</li>
+    <li><strong>${RABBIT_MESSAGE_ID}:</strong> A unique identifier assigned to the message.</li>
+    <li><strong>${RABBIT_TIMESTAMP}:</strong> The timestamp when the message was sent (in UNIX epoch format).</li>
+    <li><strong>${RABBIT_TYPE}:</strong> A message type identifier, often used to specify the kind of message being sent.</li>
+    <li><strong>${RABBIT_USER_ID}:</strong> The user ID associated with the message.</li>
+    <li><strong>${RABBIT_APP_ID}:</strong> The ID of the application that published the message.</li>
+    <li><strong>${RABBIT_CLUSTER_ID}:</strong> An identifier for the RabbitMQ cluster.</li>
+</ul>
+
+<p>For more details on these properties and their usage, please refer to the RabbitMQ documentation or the relevant sections of your application's integration guide.</p>
+</div>

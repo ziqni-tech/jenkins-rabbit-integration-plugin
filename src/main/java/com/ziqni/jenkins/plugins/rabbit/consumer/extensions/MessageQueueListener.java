@@ -1,5 +1,6 @@
 package com.ziqni.jenkins.plugins.rabbit.consumer.extensions;
 
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.security.ACL;
@@ -53,43 +54,27 @@ public abstract class MessageQueueListener implements ExtensionPoint {
     /**
      * Calls when message arrives.
      *
-     * @param queueName
-     *            the queue name.
-     * @param contentType
-     *            the type of content.
-     * @param headers
-     *            the map of headers.
+     * @param rabbitMessageProperties the message properties.
      * @param body
      *            the content body.
      */
-    public abstract void onReceive(String queueName, String contentType, Map<String, Object> headers, byte[] body);
+    public abstract void onReceive(RabbitMessageProperties rabbitMessageProperties, byte[] body);
 
     /**
      * Fires OnReceive event.
      *
-     * @param appId
-     *            the application id.
-     * @param queueName
-     *            the queue name.
-     * @param contentType
-     *            the type of content.
-     * @param headers
-     *            the map of headers.
+     * @param rabbitMessageProperties the message properties.
      * @param body
      *            the message body.
      */
-    public static void fireOnReceive(String appId,
-            String queueName,
-            String contentType,
-            Map<String, Object> headers,
-            byte[] body) {
+    public static void fireOnReceive(RabbitMessageProperties rabbitMessageProperties, byte[] body) {
         LOGGER.trace("MessageQueueListener", "fireOnReceive");
         SecurityContext old = ACL.impersonate(ACL.SYSTEM);
         try {
             for (MessageQueueListener l : all()) {
-                if (appId.equals(l.getAppId())) {
+                if (rabbitMessageProperties.getAppId().equals(l.getAppId())) {
                     try {
-                        l.onReceive(queueName, contentType, headers, body);
+                        l.onReceive(rabbitMessageProperties, body);
                     } catch (Exception ex) {
                         LOGGER.warn("Caught exception during calling onReceive()", ex);
                     }
