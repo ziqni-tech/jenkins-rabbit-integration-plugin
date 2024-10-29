@@ -19,7 +19,8 @@
     It consumes messages from RabbitMQ and delivers them to the appropriate listeners, enabling real-time processing and response.
     Additionally, the plugin features a trigger mechanism that can initiate build processes and publish the resulting build status and outputs back to AMQP.
     The plugin also provides configurable options to selectively publish specific outputs from the build console to AMQP, offering granular control over which messages are shared.</description>
-  <url>hhttps://github.com/ziqni-tech/jenkins-rabbit-integration-plugin/blob/master/images/templates-for-everyone.png</url>
+
+  <url>https://github.com/ziqni-tech/jenkins-rabbit-integration-plugin</url>
 
   <licenses>
     <license>
