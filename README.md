@@ -98,6 +98,39 @@ This trigger can be used to automate builds based on messages published to a spe
 ![build-trigger.png](images/build-trigger.png)
 
 ---
+Build environment variables
+------------------------
+
+#### RabbitMQ Message Properties
+
+This section describes the properties that are extracted and made available by the RabbitMessageProperties class. 
+
+These properties correspond to various metadata fields related to messages received from a RabbitMQ queue.
+
+#### Basic RabbitMQ Message Properties
+* ${RABBIT_QUEUE_NAME}: The name of the queue from which the message was received.
+* ${RABBIT_EXCHANGE}: The name of the exchange through which the message was routed.
+* ${RABBIT_ROUTING_KEY}: The routing key used to deliver the message.
+* ${RABBIT_DELIVERY_TAG}: A unique identifier for the message delivery.
+* ${RABBIT_REDELIVERED}: A flag indicating whether the message has been redelivered.
+* Content and Header Properties
+* ${RABBIT_CONTENT_TYPE}: The content type of the message payload (e.g., text/plain, application/json).
+* ${RABBIT_CONTENT_ENCODING}: The encoding type used for the message content (e.g., UTF-8).
+* ${RABBIT_HEADER_}: A prefix for all custom headers included with the message. The specific header names are appended to this prefix.
+#### Delivery and Metadata Properties
+* ${RABBIT_DELIVERY_MODE}: The delivery mode of the message, indicating whether it is persistent (2) or non-persistent (1).
+* ${RABBIT_PRIORITY}: The priority level of the message.
+* ${RABBIT_CORRELATION_ID}: An ID used to correlate this message with another message (typically used in RPC-style communication).
+* ${RABBIT_REPLY_TO}: An address to which a response can be sent if required.
+* ${RABBIT_EXPIRATION}: The expiration time of the message (in milliseconds).
+* ${RABBIT_MESSAGE_ID}: A unique identifier assigned to the message.
+* ${RABBIT_TIMESTAMP}: The timestamp when the message was sent (in UNIX epoch format).
+* ${RABBIT_TYPE}: A message type identifier, often used to specify the kind of message being sent.
+* ${RABBIT_USER_ID}: The user ID associated with the message.
+* ${RABBIT_APP_ID}: The ID of the application that published the message.
+* ${RABBIT_CLUSTER_ID}: An identifier for the RabbitMQ cluster.
+
+---
 [Build] Console output publishing
 ------------------------
 To publish console output, add the following to your job configuration:
