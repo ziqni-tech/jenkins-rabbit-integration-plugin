@@ -25,6 +25,15 @@
 
         <!-- Advanced section with show/hide functionality -->
         <f:advanced>
+            <f:entry title="${%Enable consumer}" field="enableBundling">
+                <f:checkbox />
+            </f:entry>
+            <f:entry title="${%Exclude start line}" field="excludeStartLine">
+                <f:checkbox />
+            </f:entry>
+            <f:entry title="${%Exclude stop line}" field="excludeStopLine">
+                <f:checkbox />
+            </f:entry>
             <f:entry title="${%Custom template (Optional)}" field="template">
                 <f:textarea />
             </f:entry>

@@ -15,9 +15,7 @@ import hudson.model.TaskListener;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -30,14 +28,17 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
 
     private static final Logger LOGGER = Logger.getLogger(RabbitConsoleLineLogger.class.getName());
 
-    private final RabbitConsoleBuildWrapper property;
-    private final AtomicInteger counter = new AtomicInteger(0);
-    private final boolean hasStopPublishingIfMessageContains;
     private final Run<?,?> run;
     private final Map<String, String> envVars;
-    private final boolean hasTemplate;
+    private final RabbitConsoleBuildWrapper property;
 
-    private final AtomicBoolean isPublishing = new AtomicBoolean(true);
+    private final boolean hasTemplate;
+    private final boolean hasStartPublishingIfMessageContains;
+    private final boolean hasStopPublishingIfMessageContains;
+
+    private final List<String> logLines = new LinkedList<>();
+    private final AtomicInteger counter = new AtomicInteger(0);
+    private final AtomicBoolean remoteLoggingEnabled = new AtomicBoolean(true);
 
     public RabbitConsoleLineLogger(OutputStream logger, RabbitConsoleBuildWrapper property, Run<?,?> run, TaskListener listener) throws IOException, InterruptedException {
         super(logger); // Pass the underlying output stream to the superclass
@@ -46,16 +47,23 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
         this.envVars = run.getEnvironment(listener);
         this.hasTemplate = property.getTemplate() != null && !property.getTemplate().trim().isEmpty() && !property.getTemplate().contains("$");
 
-        // If the property is null or empty, set the publishing flag to true
-        isPublishing.set(property.getStartPublishingIfMessageContains() == null || property.getStartPublishingIfMessageContains().trim().isEmpty());
+        // Check if the property has a stop publishing message
+        this.hasStartPublishingIfMessageContains = property.getStartPublishingIfMessageContains() != null && !property.getStartPublishingIfMessageContains().trim().isEmpty();
 
         // Check if the property has a stop publishing message
-        this.hasStopPublishingIfMessageContains = property.getStartPublishingIfMessageContains() != null && !property.getStartPublishingIfMessageContains().trim().isEmpty();
+        this.hasStopPublishingIfMessageContains = property.getStopPublishingIfMessageContains() != null && !property.getStopPublishingIfMessageContains().trim().isEmpty();
+
+        // If the property is null or empty, set the publishing flag to true
+        remoteLoggingEnabled.set(!hasStartPublishingIfMessageContains);
     }
 
     @Override
     protected void eol(byte[] b, int len) {
         try {
+
+            // Pass the original line to the underlying logger
+            out.write(b, 0, len);
+
             // Increment the counter
             final var lineNumber = counter.incrementAndGet();
 
@@ -65,35 +73,45 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
             // Trim any end-of-line characters (optional, based on your needs)
             line = trimEOL(line);
 
-            if (!isPublishing.get()) {
+            // Create a new line handler
+            LineHandler lineHandler = new LineHandler(logLines);
+
+            // Do publishing to rabbit
+            boolean publishNow = false;
+
+            if (!remoteLoggingEnabled.get()) {
                 // Check if the line contains the specified string
                 if (property.getStartPublishingIfMessageContains() != null && line.contains(property.getStartPublishingIfMessageContains())) {
-                    isPublishing.set(true);
+                    remoteLoggingEnabled.set(true);
+
+                    if(Objects.isNull(property.getExcludeStartLine()) || property.getExcludeStartLine()) {
+                        lineHandler.add(line);
+                    }
                 }
-            } else if (hasStopPublishingIfMessageContains && isPublishing.get() && Objects.nonNull(property.getStopPublishingIfMessageContains())) {
+            }
+            else if (hasStopPublishingIfMessageContains && remoteLoggingEnabled.get() && Objects.nonNull(property.getStopPublishingIfMessageContains())) {
+
                 if (line.contains(property.getStopPublishingIfMessageContains())) {
-                    isPublishing.set(false);
+                    remoteLoggingEnabled.set(false);
+                    publishNow = true;
+
+                    if (Objects.isNull(property.getExcludeStopLine()) || !property.getExcludeStopLine()) {
+                        lineHandler.add(line);
+                    }
                 }
             }
 
             // Process the line if publishing is enabled
-            if (isPublishing.get()) {
-                String formattedLine = line;
-                if (hasTemplate) {
-                    String tmp = Utils.injectEnvVars(run, envVars, property.getTemplate());
-
-                    if (tmp.contains("\"${BUILD_CONSOLE_LINE}\"")) {
-                        tmp = tmp.replace("\"${BUILD_CONSOLE_LINE}\"", line.replace("\"", "\\\""));
-                    } else {
-                        tmp = tmp.replace("${BUILD_CONSOLE_LINE}", line);
-                    }
-                    formattedLine = tmp.replace("${BUILD_CONSOLE_LINE_NUMBER}", String.valueOf(lineNumber));
-                }
-                publish(run, formattedLine);
+            if (remoteLoggingEnabled.get()) {
+                logLines.add(line);
             }
 
-            // Pass the original line to the underlying logger
-            out.write(b, 0, len);
+            if(lineHandler.hasLines() && !property.getEnableBundling()){
+                publish(run, format(lineHandler));
+            }
+            else if(lineHandler.hasLines() && publishNow){
+                publish(run, format(lineHandler));
+            }
 
         } catch (Throwable e) {
             LOGGER.warning(LOG_HEADER + "Failed to process line: " + e.getMessage());
@@ -107,10 +125,27 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
         }
     }
 
+    public String format(LineHandler lineHandler) {
 
-    protected void publish(Run<?, ?> run, String line){
+        String lines = lineHandler.getLines();
 
-        if(!isPublishing.get())
+        if (hasTemplate) {
+            String tmp = Utils.injectEnvVars(run, envVars, property.getTemplate());
+
+            if (tmp.contains("\"${BUILD_CONSOLE_LINE}\"")) {
+                tmp = tmp.replace("\"${BUILD_CONSOLE_LINE}\"", lines.replace("\"", "\\\""));
+            } else {
+                tmp = tmp.replace("${BUILD_CONSOLE_LINE}", lines);
+            }
+            lines = tmp.replace("${BUILD_CONSOLE_LINE_NUMBER}", String.valueOf(counter.get()));
+        }
+
+        return lines;
+    }
+
+    protected void publish(Run<?, ?> run, String lines){
+
+        if(!remoteLoggingEnabled.get())
             return;
 
         // Headers
@@ -122,7 +157,7 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
         // Add a header with the display name of the run
         headers.put("display-name", this.run.getDisplayName());
         // Add a header to stop the message from being displayed in the console
-        headers.put("stop-message-console", isPublishing.get() ? "false" : "true");
+        headers.put("stop-message-console", remoteLoggingEnabled.get() ? "false" : "true");
         // Add a header with the display name of the run
         headers.put(HEADER_MACHINE_ID, MachineIdentifier.getUniqueMachineId());
 
@@ -140,7 +175,7 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
                     this.property.getExchangeName(),
                     Utils.injectEnvVars(run, envVars, this.property.getRoutingKey()),
                     builder.build(),
-                    line.getBytes(StandardCharsets.UTF_8)
+                    lines.getBytes(StandardCharsets.UTF_8)
             );
 
             // Wait until publish is completed.
@@ -148,11 +183,38 @@ public class RabbitConsoleLineLogger extends LineTransformationOutputStream.Dele
                 PublishResult result = future.get();
 
                 if (!result.isSuccess()) {
-                    LOGGER.warning(LOG_HEADER + "Failed to publish message: " + line);
+                    LOGGER.warning(LOG_HEADER + "Failed to publish message: " + lines);
                 }
             } catch (Exception e) {
                 LOGGER.warning(e.getMessage());
             }
         }
     }
+
+    static class LineHandler {
+
+        final List<String> logLines;
+        boolean lineAdded = false;
+
+        LineHandler(List<String> logLines) {
+            this.logLines = logLines;
+        }
+
+        public void add(String line){
+            if (!lineAdded) {
+                lineAdded = logLines.add(line);
+            }
+        }
+
+        public boolean hasLines(){
+            return !logLines.isEmpty();
+        }
+
+        public String getLines(){
+            String lines = String.join("\n", logLines);
+            logLines.clear();
+            return lines;
+        }
+    }
+
 }

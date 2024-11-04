@@ -40,6 +40,9 @@ public class RabbitConsoleBuildWrapper extends SimpleBuildWrapper implements Rab
     private String clusterId;
     private String startPublishingIfMessageContains;
     private String stopPublishingIfMessageContains;
+    private Boolean enableBundling=false;
+    private Boolean excludeStartLine=false;
+    private Boolean excludeStopLine =false;
 
     /**
      * Creates instance with specified parameters.
@@ -63,6 +66,9 @@ public class RabbitConsoleBuildWrapper extends SimpleBuildWrapper implements Rab
      * @param clusterId         the cluster ID.
      * @param exchangeName the broker name.
      * @param routingKey the routing key.
+     * @param enableBundling enable bundling.
+     * @param excludeStartLine exclude start line.
+     * @param excludeStopLine exclude stop line.
      */
     @DataBoundConstructor
     public RabbitConsoleBuildWrapper(
@@ -84,7 +90,10 @@ public class RabbitConsoleBuildWrapper extends SimpleBuildWrapper implements Rab
             String appId,
             String clusterId,
             String startPublishingIfMessageContains,
-            String stopPublishingIfMessageContains) {
+            String stopPublishingIfMessageContains,
+            Boolean enableBundling,
+            Boolean excludeStartLine,
+            Boolean excludeStopLine) {
 
         this.exchangeName = exchangeName;
         this.template = template;
@@ -106,6 +115,25 @@ public class RabbitConsoleBuildWrapper extends SimpleBuildWrapper implements Rab
         } else {
             this.stopPublishingIfMessageContains = stopPublishingIfMessageContains;
         }
+
+        this.contentType = contentType;
+        this.contentEncoding = contentEncoding;
+        this.headers = headers;
+        this.deliveryMode = deliveryMode;
+        this.priority = priority;
+        this.correlationId = correlationId;
+        this.replyTo = replyTo;
+        this.expiration = expiration;
+        this.messageId = messageId;
+        this.timestamp = timestamp;
+        this.type = type;
+        this.userId = userId;
+        this.appId = appId;
+        this.clusterId = clusterId;
+        this.enableBundling = enableBundling;
+        this.excludeStartLine = excludeStartLine;
+        this.excludeStopLine = excludeStopLine;
+
     }
 
     public String getExchangeName() {
@@ -307,6 +335,33 @@ public class RabbitConsoleBuildWrapper extends SimpleBuildWrapper implements Rab
     @DataBoundSetter
     public void setClusterId(String clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Boolean getEnableBundling() {
+        return enableBundling;
+    }
+
+    @DataBoundSetter
+    public void setEnableBundling(Boolean enableBundling) {
+        this.enableBundling = enableBundling;
+    }
+
+    public Boolean getExcludeStartLine() {
+        return excludeStartLine;
+    }
+
+    @DataBoundSetter
+    public void setExcludeStartLine(Boolean excludeStartLine) {
+        this.excludeStartLine = excludeStartLine;
+    }
+
+    public Boolean getExcludeStopLine() {
+        return excludeStopLine;
+    }
+
+    @DataBoundSetter
+    public void setExcludeStopLine(Boolean excludeStopLine) {
+        this.excludeStopLine = excludeStopLine;
     }
 
     @Extension
