@@ -42,6 +42,8 @@ import static com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier.HEADER_MA
  */
 public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuilderAccessors {
 
+
+    public static final String LOG_HEADER = "Publish to RabbitMQ: ";
     private static final Logger LOGGER = Logger.getLogger(RabbitBuildPublisher.class.getName());
 
     private static final String KEY_PROJECT = "project";
@@ -51,8 +53,6 @@ public class RabbitBuildPublisher extends Notifier implements RabbitMessageBuild
     public static final String HEADER_JENKINS_URL = "jenkins-url";
     public static final String JSON_CONTENT_TYPE = "application/json";
     public static final String TEXT_CONTENT_TYPE = "text/plain";
-
-    public static final String LOG_HEADER = "Publish to RabbitMQ: ";
 
     private String exchangeName;
     private String routingKey;

@@ -1,9 +1,18 @@
 package com.ziqni.jenkins.plugins.rabbit.trigger;
 
+import com.rabbitmq.client.AMQP;
+import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannel;
+import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishChannelFactory;
+import com.ziqni.jenkins.plugins.rabbit.consumer.publishers.PublishResult;
+import com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier;
+import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageBuilder;
 import com.ziqni.jenkins.plugins.rabbit.utils.RabbitMessageProperties;
+import com.ziqni.jenkins.plugins.rabbit.utils.Utils;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.Launcher;
 import hudson.model.*;
+import hudson.model.Queue;
 import hudson.model.listeners.ItemListener;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
@@ -16,7 +25,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
+
+import static com.ziqni.jenkins.plugins.rabbit.trigger.JobRequestConstraints.CONFIRM_RECEIPT;
+import static com.ziqni.jenkins.plugins.rabbit.utils.MachineIdentifier.HEADER_MACHINE_ID;
 
 /**
  * The extension trigger builds by application message.
@@ -24,6 +40,12 @@ import java.util.*;
  * @author rinrinne a.k.a. rin_ne
  */
 public class RabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.ParameterizedJob<?,?>> extends Trigger<T> {
+
+    private static final Logger LOGGER = Logger.getLogger(RabbitBuildTrigger.class.getName());
+
+    public static final String LOG_HEADER = "Publish to RabbitMQ from Rabbit Build Trigger: ";
+    public static final String HEADER_JENKINS_URL = "jenkins-url";
+    public static final String JSON_CONTENT_TYPE = "application/json";
 
     public static final String PLUGIN_APPID = "robo-rabbit-remote-build";
 
@@ -114,39 +136,54 @@ public class RabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.Para
     /**
      * Schedules build for triggered job using application message.
      *
-     * @param props the properties of application message.
-     * @param jsonArray
-     *            the content of application message.
+     * @param props         the properties of application message.
+     * @param parametersArray     the content of application message.
+     * @param constraintSet the set of constraints.
      */
-    public void scheduleBuild(RabbitMessageProperties props, JSONArray jsonArray) {
+    public void scheduleBuild(RabbitMessageProperties props, JSONArray parametersArray, Set<String> constraintSet) {
         if (job != null) {
 
             final var cause = new RabbitBuildCause(props);
 
-            if (jsonArray != null) {
-                List<ParameterValue> parameters = getUpdatedParameters(jsonArray, getDefinitionParameters(job));
-                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new ParametersAction(parameters), new EnvironmentVariablesAction(props));
+            if (parametersArray != null) {
+                List<ParameterValue> parameters = getUpdatedParameters(parametersArray, getDefinitionParameters(job));
+                handleQueueItem(props,constraintSet, ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new ParametersAction(parameters), new EnvironmentVariablesAction(props)) );
             } else {
-                ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new EnvironmentVariablesAction(props));
+                handleQueueItem(props,constraintSet, ParameterizedJobMixIn.scheduleBuild2(job, 0, new CauseAction(cause), new EnvironmentVariablesAction(props)) );
             }
         }
+    }
+
+    private void handleQueueItem(RabbitMessageProperties props, Set<String> constraintSet, Queue.Item item) {
+        if (item.task instanceof Job) {
+            Job<?, ?> job = (Job<?, ?>) item.task;
+
+            if(constraintSet.contains(CONFIRM_RECEIPT.getValue())) {
+                try {
+                    confirmReceipt(props, job);
+                } catch (Exception e) {
+                    LOGGER.warning(e.getMessage());
+                }
+            }
+        }
+
     }
 
     /**
      * Gets updated parameters in job.
      *
-     * @param jsonParameters
+     * @param parametersArray
      *            the array of JSONObjects.
      * @param definedParameters
      *            the list of defined paramters.
      * @return the list of parameter values.
      */
-    private List<ParameterValue> getUpdatedParameters(JSONArray jsonParameters, List<ParameterValue> definedParameters) {
+    private List<ParameterValue> getUpdatedParameters(JSONArray parametersArray, List<ParameterValue> definedParameters) {
         List<ParameterValue> newParams = new ArrayList<>();
         for (ParameterValue defParam : definedParameters) {
 
-            for (int i = 0; i < jsonParameters.size(); i++) {
-                JSONObject jsonParam = jsonParameters.getJSONObject(i);
+            for (int i = 0; i < parametersArray.size(); i++) {
+                JSONObject jsonParam = parametersArray.getJSONObject(i);
 
                 if (defParam.getName().equalsIgnoreCase(jsonParam.getString(KEY_PARAM_NAME))) {
                     newParams.add(new StringParameterValue(defParam.getName(), jsonParam.getString(KEY_PARAM_VALUE)));
@@ -224,5 +261,44 @@ public class RabbitBuildTrigger<T extends Job<?, ?> & ParameterizedJobMixIn.Para
                 }
             }
         }
+    }
+
+    public boolean confirmReceipt(RabbitMessageProperties props, Job<?, ?> job)
+            throws InterruptedException, IOException {
+
+        // Header
+        Map<String, Object> headers = new HashMap<>();
+        Jenkins jenkins = Jenkins.get();
+        headers.put(HEADER_JENKINS_URL, jenkins.getRootUrl());
+        headers.put(HEADER_MACHINE_ID, MachineIdentifier.getUniqueMachineId());
+
+        // Basic property
+        AMQP.BasicProperties.Builder builder = new AMQP.BasicProperties.Builder();
+        builder.replyTo("no-reply");
+        builder.contentType(JSON_CONTENT_TYPE);
+        builder.appId(RabbitBuildTrigger.PLUGIN_APPID);
+        builder.correlationId(props.getCorrelationId());
+
+        // Publish message
+        PublishChannel ch = PublishChannelFactory.getPublishChannel();
+        if (ch != null && ch.isOpen()) {
+            // return value is not needed if you don't need to wait.
+            String response = JobInfoMapper.createJobInfoJson(job).toString();
+
+            Future<PublishResult> future = ch.publish(
+                    props.getExchange(),
+                    props.getReplyTo(),
+                    builder.build(),
+                    response.getBytes(StandardCharsets.UTF_8)
+            );
+
+            // Wait until publish is completed.
+            try {
+                PublishResult result = future.get();
+            } catch (Exception e) {
+                LOGGER.warning(e.getMessage());
+            }
+        }
+        return true;
     }
 }

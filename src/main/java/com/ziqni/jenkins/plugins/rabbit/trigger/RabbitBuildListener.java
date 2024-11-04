@@ -8,6 +8,7 @@ import net.sf.json.JSONException;
 import net.sf.json.JSONSerializer;
 import com.ziqni.jenkins.plugins.rabbit.consumer.extensions.MessageQueueListener;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -30,6 +31,7 @@ public class RabbitBuildListener extends MessageQueueListener {
     private static final String CONTENT_TYPE_JSON = "application/json";
     private static final String KEY_PROJECT = "project";
     private static final String KEY_TOKEN = "token";
+    private static final String KEY_CONSTRAINTS = "constraints";
     private static final String KEY_PARAMETER = "parameter";
 
     private static final Logger LOGGER = Logger.getLogger(RabbitBuildListener.class.getName());
@@ -103,19 +105,27 @@ public class RabbitBuildListener extends MessageQueueListener {
             JSONObject json = (JSONObject) JSONSerializer.toJSON(msg);
             for (RabbitBuildTrigger<?> rabbitBuildTrigger : triggers) {
 
+                final var constraints = json.containsKey(KEY_CONSTRAINTS) ? json.getJSONArray(KEY_CONSTRAINTS) : null;
+                final Set<String> constraintSet = new HashSet<>();
+                if (constraints != null) {
+                    for (int i = 0; i < constraints.size(); i++) {
+                        constraintSet.add(constraints.getString(i));
+                    }
+                }
+
                 final var tokenReceived = json.containsKey(KEY_TOKEN) ? json.getString(KEY_TOKEN) : null;
-                final var tokenOk = tokenMatched(tokenReceived,rabbitBuildTrigger.getRemoteBuildToken());
+                final var tokenOk = tokenMatched( tokenReceived, rabbitBuildTrigger.getRemoteBuildToken() );
 
                 if (!tokenOk) {
-                    LOGGER.log(Level.WARNING, "Token mismatched for project {0}", rabbitBuildTrigger.getProjectName());
+                    LOGGER.log(Level.WARNING, "Token mismatched for project {0}", rabbitBuildTrigger.getProjectName() );
                     continue;
                 }
 
                 if (rabbitBuildTrigger.getProjectName().equals(json.getString(KEY_PROJECT))) {
                     if (json.containsKey(KEY_PARAMETER)) {
-                        rabbitBuildTrigger.scheduleBuild(props, json.getJSONArray(KEY_PARAMETER));
+                        rabbitBuildTrigger.scheduleBuild(props, json.getJSONArray(KEY_PARAMETER), constraintSet);
                     } else {
-                        rabbitBuildTrigger.scheduleBuild(props, null);
+                        rabbitBuildTrigger.scheduleBuild(props, null, constraintSet);
                     }
                 }
             }

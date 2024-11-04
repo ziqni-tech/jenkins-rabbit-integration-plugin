@@ -139,4 +139,16 @@ public class RabbitMessageProperties {
     public void addAll(EnvVars env) {
         env.putAll(vars);
     }
+
+    public String getExchange() {
+        return vars.get(RABBIT_EXCHANGE);
+    }
+
+    public String getReplyTo() {
+        return vars.get(RABBIT_REPLY_TO);
+    }
+
+    public String getCorrelationId() {
+        return vars.get(RABBIT_CORRELATION_ID);
+    }
 }
