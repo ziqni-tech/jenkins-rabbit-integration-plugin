@@ -12,28 +12,28 @@
             <f:textbox/>
         </f:entry>
 
-        <!-- Input field for Start Publishing Trigger -->
-        <f:entry title="Start publishing if the console message contains (Optional)" field="startPublishingIfMessageContains" class="conditional-field">
-            <f:textbox/>
-        </f:entry>
-
-        <!-- Input field for Stop Publishing Trigger -->
-        <f:entry title="Stop publishing if the console message contains (Optional)" field="stopPublishingIfMessageContains" class="conditional-field">
-            <f:textbox/>
-        </f:entry>
-
-
         <!-- Advanced section with show/hide functionality -->
         <f:advanced>
-            <f:entry title="${%Enable consumer}" field="enableBundling">
+            <f:entry title="${%Enable bundling}" field="enableBundling">
                 <f:checkbox />
+            </f:entry>
+
+            <!-- Input field for Start Publishing Trigger -->
+            <f:entry title="Start publishing if the console message contains (Optional)" field="startPublishingIfMessageContains" class="conditional-field">
+                <f:textbox/>
             </f:entry>
             <f:entry title="${%Exclude start line}" field="excludeStartLine">
                 <f:checkbox />
             </f:entry>
+
+            <!-- Input field for Stop Publishing Trigger -->
+            <f:entry title="Stop publishing if the console message contains (Optional)" field="stopPublishingIfMessageContains" class="conditional-field">
+                <f:textbox/>
+            </f:entry>
             <f:entry title="${%Exclude stop line}" field="excludeStopLine">
                 <f:checkbox />
             </f:entry>
+
             <f:entry title="${%Custom template (Optional)}" field="template">
                 <f:textarea />
             </f:entry>
